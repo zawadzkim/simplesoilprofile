@@ -1,0 +1,36 @@
+base_url: "https://www.dov.vlaanderen.be/api"
+endpoint: "/boring/profiles"
+method: "GET"
+response_type: "json"
+layer_path: "$.data[*].layers"
+
+params:
+  format: "json"
+  size: "100"
+
+headers:
+  Accept: "application/json"
+
+field_mappings:
+  name: "$.id"
+  description: "$.description"
+  texture_class: "$.texture"
+  clay_content: "$.clay_percentage"
+  silt_content: "$.silt_percentage"
+  sand_content: "$.sand_percentage"
+  organic_matter: "$.organic_matter_percentage"
+  bulk_density: "$.bulk_density"
+
+transformations:
+  # Convert percentages to fractions for van Genuchten parameters
+  theta_res: "0.01 * float(data.get('clay_percentage', 0))"
+  theta_sat: "0.4 + 0.002 * float(data.get('clay_percentage', 0))"
+  alpha: "exp(-4.3 - 0.021 * float(data.get('clay_percentage', 0)))"
+  n: "1.5 + 0.015 * float(data.get('sand_percentage', 0))"
+  k_sat: "10.0 * exp(-0.05 * float(data.get('clay_percentage', 0)))"
+  l: "0.5"  # Default value
+
+coordinates:
+  x: "$.location.x"
+  y: "$.location.y"
+  z: "$.location.z"
