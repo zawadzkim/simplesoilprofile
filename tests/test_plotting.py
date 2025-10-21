@@ -69,7 +69,7 @@ def test_plot_creation(sample_profile):
 def test_plot_annotations(sample_profile):
     """Test plot annotations and text elements."""
     fig, ax = plt.subplots()
-    ax = plot_profile(sample_profile, ax=ax, show_properties=True)
+    ax = plot_profile(sample_profile, ax=ax, show_layer_properties=True)
     
     # Check that we have text annotations
     texts = ax.texts
