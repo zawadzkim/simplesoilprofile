@@ -53,8 +53,8 @@ def plot_profile(
         texture_colors = DEFAULT_TEXTURE_COLORS
     
     # Sort layers by depth
-    sorted_depths = sorted(profile.layer_depths.items(), key=lambda x: x[0])
-    total_depth = profile.get_profile_depth()
+    sorted_depths = sorted(profile.layer_bounds.items(), key=lambda x: x[0])
+    total_depth = profile.profile_depth
     
     # Plot each layer
     for layer_idx, (top, bottom) in sorted_depths:
