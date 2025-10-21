@@ -15,26 +15,30 @@ class SoilLayer(BaseModel):
     """
 
     name: str = Field(..., description="Name or identifier of the soil layer")
+    texture_class: Optional[str] = Field(None, description="Soil texture class (e.g., 'sand', 'clay', etc.)")
     discretization: Optional[LayerDiscretization] = Field(
         None, description="Configuration for layer discretization into sublayers"
     )
     description: Optional[str] = Field(None, description="Description of the soil layer")
     
     # Van Genuchten parameters
-    theta_res: float = Field(..., description="Residual water content [cm³/cm³]", ge=0.0, le=1.0)
-    theta_sat: float = Field(..., description="Saturated water content [cm³/cm³]", ge=0.0, le=1.0)
-    alpha: float = Field(..., description="Shape parameter alpha [1/cm]", gt=0.0)
-    n: float = Field(..., description="Shape parameter n [-]", gt=1.0)
-    k_sat: float = Field(..., description="Saturated hydraulic conductivity [cm/day]", gt=0.0)
-    l: float = Field(0.5, description="Tortuosity parameter lambda [-]")
-
-    # Additional physical properties
-    texture_class: Optional[str] = Field(None, description="Soil texture class (e.g., 'sand', 'clay', etc.)")
+    theta_res: Optional[float] = Field(None, description="Residual water content [cm³/cm³]", ge=0.0, le=1.0)
+    theta_sat: Optional[float] = Field(None, description="Saturated water content [cm³/cm³]", ge=0.0, le=1.0)
+    alpha: Optional[float] = Field(None, description="Shape parameter alpha [1/cm]", gt=0.0)
+    n: Optional[float] = Field(None, description="Shape parameter n [-]", gt=1.0)
+    k_sat: Optional[float] = Field(None, description="Saturated hydraulic conductivity [cm/day]", gt=0.0)
+    l: Optional[float] = Field(0.5, description="Tortuosity parameter lambda [-]")
+    alphaw: Optional[float] = Field(None, description="Alfa parameter of main wetting curve [cm]", ge=0.0, le=100.0)
+    h_enpr: Optional[float] = Field(None, description="Air entry pressure head [cm]", ge=-40.0, le=0)
+    ksatexm: Optional[float] = Field(None, description="Measured hydraulic conductivity at saturated conditions [cm/day]", ge=0.0, le=1e5)
+    bulk_density: Optional[float] = Field(None, description="Bulk density [g/cm³]", gt=0.0)
+    
+    #  texture information (used in heat flow section of SWAP)
     clay_content: Optional[float] = Field(None, description="Clay content [%]", ge=0.0, le=100.0)
     silt_content: Optional[float] = Field(None, description="Silt content [%]", ge=0.0, le=100.0)
     sand_content: Optional[float] = Field(None, description="Sand content [%]", ge=0.0, le=100.0)
     organic_matter: Optional[float] = Field(None, description="Organic matter content [%]", ge=0.0)
-    bulk_density: Optional[float] = Field(None, description="Bulk density [g/cm³]", gt=0.0)
+
 
     @model_validator(mode='after')
     def validate_texture_composition(self) -> 'SoilLayer':
