@@ -38,11 +38,11 @@ class SoilLayer(BaseModel):
 
     @model_validator(mode='after')
     def validate_texture_composition(self) -> 'SoilLayer':
-        """Validate that clay, silt, and sand contents sum to 100% if all are provided."""
-        if all(content is not None for content in [self.clay_content, self.silt_content, self.sand_content]):
+        """Ensure clay, silt, and sand contents do not sum to more than 100% when all provided."""
+        if all(v is not None for v in (self.clay_content, self.silt_content, self.sand_content)):
             total = self.clay_content + self.silt_content + self.sand_content
-            if abs(total - 100.0) > 0.1:  # Allow for small rounding errors
-                raise ValueError("Clay, silt, and sand contents must sum to 100%")
+            if total > 100.0 + 0.1:  # Allow small rounding tolerance
+                raise ValueError("Clay, silt, and sand contents must not exceed 100% in total")
         return self
 
     @model_validator(mode='after')
