@@ -55,6 +55,66 @@ class SoilLayer(BaseModel):
         if self.theta_res >= self.theta_sat:
             raise ValueError("Residual water content must be less than saturated water content")
         return self
+    
+    @computed_field
+    @property
+    def sum_texture(self) -> Optional[float]:
+        """Compute the sum of clay, silt, and sand contents if all are provided."""
+        if all(v is not None for v in (self.clay_content, self.silt_content, self.sand_content)):
+            return self.clay_content + self.silt_content + self.sand_content
+        return None
+    
+    def normalize_soil_fractions(
+        self,
+        tolerance: float = 2.0
+    ) -> tuple[float, float, float]:
+        """
+        Normalize soil texture fractions to sum to 100%.
+        
+        Parameters
+        ----------
+        sand, silt, clay : float
+            Soil fraction percentages
+        tolerance : float
+            Maximum acceptable deviation from 100% before normalization (default: 2%)
+            
+        Returns
+        -------
+        tuple[float, float, float]
+            Normalized (sand, silt, clay) percentages
+            
+        Examples
+        --------
+        >>> normalize_soil_fractions(72.97, 22.44, 3.61)
+        (73.76, 22.68, 3.65)  # Sum was 99.02, now 100.0
+        """
+        total = self.sand_content + self.silt_content + self.clay_content
+        
+        # Check if normalization is needed
+        if abs(total - 100.0) < 0.01:  # Already at 100%
+            return None
+
+        # Warn if deviation is large (potential data quality issue)
+        if abs(total - 100.0) > tolerance:
+            logger.warning(
+                "Sum of soil fractions %.2f%% exceeds tolerance of %.1f%% for layer '%s'",
+                total, tolerance, self.name
+            )
+        
+        # Proportional normalization
+        if total > 0:
+            logger.warning(
+                "Normalizing soil fractions for layer '%s': %.2f%% -> 100.0%%",
+                self.name, total
+            )
+            self.sand_content = (self.sand_content / total) * 100.0
+            self.silt_content = (self.silt_content / total) * 100.0
+            self.clay_content = (self.clay_content / total) * 100.0
+
+            return None
+        else:
+            raise ValueError("Sum of fractions is zero or negative")
+
 
     def get_sublayer_boundaries(self, top: float, bottom: float) -> List[float]:
         """Get the sublayer boundary depths for this layer.
