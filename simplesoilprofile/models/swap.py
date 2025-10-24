@@ -1,79 +1,79 @@
 """Utilities for generating SWAP model input files from soil profiles."""
 
-from typing import List, TextIO
-from ..models import SoilProfile, SoilLayer
+import pandas as pd
+from ..models import SoilProfile
 
 
-def format_van_genuchten_table(layer: SoilLayer) -> str:
-    """Format van Genuchten parameters for SWAP soil hydraulic function table.
-    
-    Args:
-        layer: The soil layer containing van Genuchten parameters
-        
-    Returns:
-        Formatted string for SWAP soil hydraulic function table
-    """
-    return (
-        f"* {layer.name}\n"
-        f"* ISOILLAY{layer.name.upper():5} ! soil hydraulic functions\n"
-        f"  1         ! ORES = {layer.theta_res:.6f}\n"
-        f"  2         ! OSAT = {layer.theta_sat:.6f}\n"
-        f"  3         ! ALFA = {layer.alpha:.6f}\n"
-        f"  4         ! NPAR = {layer.n:.6f}\n"
-        f"  5         ! KSAT = {layer.k_sat:.6f}\n"
-        f"  6         ! LEXP = {layer.l:.6f}\n"
-    )
-
-
-def write_swap_soil_file(profile: SoilProfile, output_file: TextIO) -> None:
-    """Write soil profile data to SWAP format file.
+def profile_to_soilhydfunc_table(
+    profile: SoilProfile,
+) -> pd.DataFrame:
+    """Convert a SoilProfile to a SWAP-compatible SOILHYDRFUNC table.
     
     Args:
         profile: The soil profile to convert
-        output_file: File object to write to (must be opened in write mode)
-    """
-    # Write header
-    output_file.write(f"* Soil profile: {profile.name}\n")
-    if profile.description:
-        output_file.write(f"* Description: {profile.description}\n")
-    output_file.write("*\n")
-    
-    # Write number of soil layers
-    output_file.write(f"  {len(profile.layers)}    ! ISOILLAY = number of soil layers\n")
-    output_file.write("*\n")
-    
-    # Write thickness of soil layers
-    output_file.write("* thickness of soil layers [cm]:\n")
-    sorted_depths = sorted(profile.layer_depths.items(), key=lambda x: x[0])
-    thicknesses = []
-    prev_depth = 0.0
-    
-    for _, (top, bottom) in sorted_depths:
-        thickness = bottom - top
-        thicknesses.append(thickness)
-        prev_depth = bottom
-    
-    thickness_str = " ".join(f"{t:.1f}" for t in thicknesses)
-    output_file.write(f"  {thickness_str}    ! HSUBLAY = thickness of soil layers [cm]\n")
-    output_file.write("*\n")
-    
-    # Write van Genuchten parameters for each layer
-    output_file.write("* soil hydraulic functions:\n")
-    for layer in profile.layers:
-        output_file.write("\n")
-        output_file.write(format_van_genuchten_table(layer))
 
-
-def get_swap_table_headers() -> List[str]:
-    """Get the standard headers for SWAP soil hydraulic function tables.
-    
     Returns:
-        List of column headers used in SWAP tables
+        DataFrame containing the SOILHYDRFUNC table with any column that contains
+        None/NaN values removed.
     """
-    return [
-        "h",         # pressure head [cm]
-        "theta",     # water content [cm3/cm3]
-        "K",         # hydraulic conductivity [cm/d]
-        "C",         # differential moisture capacity [1/cm]
-        "Se",        # relative saturation [-]
-    ]
+    rows = []
+    for layer in profile.layers:
+        rows.append({
+            "ORES": layer.theta_res,
+            "OSAT": layer.theta_sat,
+            "ALFA": layer.alpha,
+            "NPAR": layer.n,
+            "LEXP": layer.l,
+            "KSATFIT": layer.k_sat,
+            "H_ENPR": layer.h_enpr,
+            "KSATEXM": layer.ksatexm,
+            "BDENS": layer.bulk_density,
+            "ALFAW": layer.alphaw,
+        })
+
+    df = pd.DataFrame(rows)
+    df = df.dropna(axis=1, how="any")
+    return df
+
+def profile_to_sublayer_table(profile: SoilProfile) -> pd.DataFrame:
+    """Convert a SoilProfile to a DataFrame representing sublayers and compartments."""
+    rows = []
+    sublay_counter = 1
+    for isoillay, layer in enumerate(profile.layers, start=1):
+        if layer.discretization:
+            # scale normalized compartment heights by the actual layer thickness
+            top, bottom = profile.layer_bounds[isoillay - 1]
+            thickness = bottom - top
+            for height_ratio in layer.discretization.compartment_heights:
+                height = height_ratio * thickness
+                rows.append({
+                    'ISUBLAY': sublay_counter,
+                    'ISOILLAY': isoillay,
+                    'HSUBLAY': height,
+                    'NCOMP': layer.discretization.num_compartments,
+                    'HCOMP': height / layer.discretization.num_compartments
+                })
+                sublay_counter += 1
+
+    return pd.DataFrame(rows)
+
+def profile_to_texture_table(
+    profile: SoilProfile,
+) -> pd.DataFrame:
+    """Convert a SoilProfile to a SWAP-compatible SOILTEXTURE table.
+    
+    Args:
+        profile: The soil profile to convert
+
+    Returns:
+        DataFrame containing the SOILTEXTURE table.
+    """
+    rows = []
+    for layer in profile.layers:
+        rows.append({
+            "PCLAY": layer.clay_content,
+            "PSILT": layer.silt_content,
+            "PSAND": layer.sand_content,
+            "ORGMAT": layer.organic_matter,
+        })
+    return pd.DataFrame(rows)
