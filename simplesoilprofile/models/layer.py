@@ -39,15 +39,10 @@ class SoilLayer(BaseModel):
     sand_content: Optional[float] = Field(None, description="Sand content [%]", ge=0.0, le=100.0)
     organic_matter: Optional[float] = Field(None, description="Organic matter content [%]", ge=0.0)
 
-
-    @model_validator(mode='after')
-    def validate_texture_composition(self) -> 'SoilLayer':
-        """Ensure clay, silt, and sand contents do not sum to more than 100% when all provided."""
-        if all(v is not None for v in (self.clay_content, self.silt_content, self.sand_content)):
-            total = self.clay_content + self.silt_content + self.sand_content
-            if total > 100.0 + 0.1:  # Allow small rounding tolerance
-                raise ValueError("Clay, silt, and sand contents must not exceed 100% in total")
-        return self
+    metadata: Optional[dict[str, M]] = Field(
+        default_factory=dict,
+        description="Metadata for each measured parameter, keyed by parameter name"
+    )
 
     @model_validator(mode='after')
     def validate_water_contents(self) -> 'SoilLayer':
