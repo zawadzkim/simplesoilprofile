@@ -1,0 +1,318 @@
+# Flemish/Belgian Soil Texture Classification Reference Data
+# Source: Belgian Soil Classification System (Centrum voor Bodemkartering, ~1950)
+# References: 
+#   - Van Ranst and Sys, 2000
+#   - VITO BOC Compendium v1.2, 2011
+#   - Hogent Bodemkunde Syllabus, 2023-2024
+
+metadata:
+  classification_system: Belgian/Flemish
+  reference: "Centrum voor Bodemkartering (RUGent), ~1950; VITO BOC v1.2, 2011"
+  silt_definition: "2-50 µm (differs from USDA 2-63 µm)"
+  units: percent
+  description: "Belgian soil texture classification with 7 main classes"
+  note: "Belgian silt fraction is narrower than USDA, leading to systematic differences"
+
+# Geometric centroids (recommended for single-value estimates)
+centroids:
+  # Main texture classes (7 classes)
+  zand:  # Z - Sand
+    sand: 90.0
+    silt: 7.0
+    clay: 3.0
+  
+  lemig_zand:  # S - Loamy sand
+    sand: 75.0
+    silt: 17.5
+    clay: 7.5
+  
+  licht_zandleem:  # P - Light sandy loam
+    sand: 58.0
+    silt: 30.0
+    clay: 12.0
+  
+  zandleem:  # L - Sandy loam
+    sand: 42.0
+    silt: 45.0
+    clay: 13.0
+  
+  leem:  # A - Loam/Silt loam
+    sand: 12.0
+    silt: 75.0
+    clay: 13.0
+  
+  klei:  # E - Clay
+    sand: 22.0
+    silt: 52.0
+    clay: 26.0
+  
+  zware_klei:  # U - Heavy clay
+    sand: 10.0
+    silt: 35.0
+    clay: 55.0
+  
+  # Subclasses (more detailed)
+  kleiig_zand:
+    sand: 87.0
+    silt: 8.0
+    clay: 5.0
+  
+  zwaar_zandleem:
+    sand: 38.0
+    silt: 48.0
+    clay: 14.0
+  
+  zeer_licht_leem:
+    sand: 18.0
+    silt: 70.0
+    clay: 12.0
+  
+  licht_leem:
+    sand: 10.0
+    silt: 77.0
+    clay: 13.0
+  
+  zwaar_leem:
+    sand: 8.0
+    silt: 78.0
+    clay: 14.0
+  
+  lemige_klei:
+    sand: 18.0
+    silt: 60.0
+    clay: 22.0
+  
+  lichte_klei:
+    sand: 20.0
+    silt: 55.0
+    clay: 25.0
+  
+  zandige_klei:
+    sand: 35.0
+    silt: 38.0
+    clay: 27.0
+  
+  zeer_zware_klei:
+    sand: 8.0
+    silt: 25.0
+    clay: 67.0
+  
+  zware_zandige_klei:
+    sand: 25.0
+    silt: 30.0
+    clay: 45.0
+
+# Statistical ranges (estimated from Belgian soil database)
+# Note: These are approximate ranges based on texture triangle boundaries
+ranges:
+  zand:
+    sand:
+      mean: 90.0
+      min: 82.5
+      max: 100.0
+      std: 4.5
+    silt:
+      mean: 7.0
+      min: 0.0
+      max: 17.5
+      std: 4.2
+    clay:
+      mean: 3.0
+      min: 0.0
+      max: 5.0
+      std: 1.5
+  
+  lemig_zand:
+    sand:
+      mean: 75.0
+      min: 67.5
+      max: 82.5
+      std: 4.0
+    silt:
+      mean: 17.5
+      min: 10.0
+      max: 32.5
+      std: 6.0
+    clay:
+      mean: 7.5
+      min: 5.0
+      max: 10.0
+      std: 1.5
+  
+  licht_zandleem:
+    sand:
+      mean: 58.0
+      min: 50.0
+      max: 67.5
+      std: 4.5
+    silt:
+      mean: 30.0
+      min: 22.5
+      max: 40.0
+      std: 5.0
+    clay:
+      mean: 12.0
+      min: 10.0
+      max: 15.0
+      std: 1.5
+  
+  zandleem:
+    sand:
+      mean: 42.0
+      min: 15.0
+      max: 50.0
+      std: 9.0
+    silt:
+      mean: 45.0
+      min: 35.0
+      max: 65.0
+      std: 8.0
+    clay:
+      mean: 13.0
+      min: 10.0
+      max: 15.0
+      std: 1.5
+  
+  leem:
+    sand:
+      mean: 12.0
+      min: 0.0
+      max: 25.0
+      std: 6.5
+    silt:
+      mean: 75.0
+      min: 65.0
+      max: 87.0
+      std: 6.0
+    clay:
+      mean: 13.0
+      min: 8.0
+      max: 15.0
+      std: 2.0
+  
+  klei:
+    sand:
+      mean: 22.0
+      min: 10.0
+      max: 45.0
+      std: 8.5
+    silt:
+      mean: 52.0
+      min: 35.0
+      max: 65.0
+      std: 8.0
+    clay:
+      mean: 26.0
+      min: 17.5
+      max: 35.0
+      std: 4.5
+  
+  zware_klei:
+    sand:
+      mean: 10.0
+      min: 0.0
+      max: 35.0
+      std: 9.0
+    silt:
+      mean: 35.0
+      min: 15.0
+      max: 50.0
+      std: 9.0
+    clay:
+      mean: 55.0
+      min: 35.0
+      max: 90.0
+      std: 14.0
+  
+  # Subclasses with ranges
+  lemige_klei:
+    sand:
+      mean: 18.0
+      min: 10.0
+      max: 25.0
+      std: 4.0
+    silt:
+      mean: 60.0
+      min: 55.0
+      max: 67.5
+      std: 3.5
+    clay:
+      mean: 22.0
+      min: 17.5
+      max: 27.5
+      std: 2.5
+  
+  lichte_klei:
+    sand:
+      mean: 20.0
+      min: 15.0
+      max: 30.0
+      std: 4.0
+    silt:
+      mean: 55.0
+      min: 45.0
+      max: 62.5
+      std: 5.0
+    clay:
+      mean: 25.0
+      min: 20.0
+      max: 30.0
+      std: 2.5
+  
+  zandige_klei:
+    sand:
+      mean: 35.0
+      min: 25.0
+      max: 45.0
+      std: 5.0
+    silt:
+      mean: 38.0
+      min: 30.0
+      max: 47.5
+      std: 5.0
+    clay:
+      mean: 27.0
+      min: 22.5
+      max: 32.5
+      std: 3.0
+
+# Common aliases and name variations
+aliases:
+  # English to Dutch
+  sand: zand
+  sandy: zand
+  loamy_sand: lemig_zand
+  light_sandy_loam: licht_zandleem
+  sandy_loam: zandleem
+  loam: leem
+  silt_loam: leem
+  silt: leem
+  clay: klei
+  heavy_clay: zware_klei
+  silty_clay: lemige_klei
+  sandy_clay: zandige_klei
+  light_clay: lichte_klei
+  
+  # Dutch variations with spaces
+  lemig zand: lemig_zand
+  licht zandleem: licht_zandleem
+  zwaar zandleem: zwaar_zandleem
+  zeer licht leem: zeer_licht_leem
+  licht leem: licht_leem
+  zwaar leem: zwaar_leem
+  lemige klei: lemige_klei
+  lichte klei: lichte_klei
+  zandige klei: zandige_klei
+  zware klei: zware_klei
+  zeer zware klei: zeer_zware_klei
+  zware zandige klei: zware_zandige_klei
+  kleiig zand: kleiig_zand
+  
+  # Code-based (from Belgian soil maps)
+  Z: zand
+  S: lemig_zand
+  P: licht_zandleem
+  L: zandleem
+  A: leem
+  E: klei
+  U: zware_klei

@@ -1,0 +1,291 @@
+# USDA Soil Texture Classification Reference Data
+# Source: Levi, M.R., 2017. Modified Centroid for Estimating Sand, Silt, and Clay 
+# from Soil Texture Class. Soil Sci. Soc. Am. J. 81:578–588.
+# https://doi.org/10.2136/sssaj2016.09.0301
+
+metadata:
+  classification_system: USDA
+  reference: "Levi, M.R., 2017. SSSAJ 81:578-588"
+  units: percent
+  description: "USDA soil texture class representative values based on 75,736 samples from NCSS database"
+
+# Geometric centroids (recommended for single-value estimates)
+centroids:
+  sand:
+    sand: 92.0
+    silt: 5.0
+    clay: 3.0
+  
+  loamy_sand:
+    sand: 82.0
+    silt: 12.0
+    clay: 6.0
+  
+  sandy_loam:
+    sand: 65.0
+    silt: 25.0
+    clay: 10.0
+  
+  sandy_clay_loam:
+    sand: 60.0
+    silt: 13.0
+    clay: 27.0
+  
+  sandy_clay:
+    sand: 52.0
+    silt: 7.0
+    clay: 41.0
+  
+  loam:
+    sand: 40.0
+    silt: 40.0
+    clay: 20.0
+  
+  silt_loam:
+    sand: 20.0
+    silt: 65.0
+    clay: 15.0
+  
+  silt:
+    sand: 8.0
+    silt: 87.0
+    clay: 5.0
+  
+  clay_loam:
+    sand: 32.0
+    silt: 34.0
+    clay: 34.0
+  
+  silty_clay_loam:
+    sand: 10.0
+    silt: 56.0
+    clay: 34.0
+  
+  silty_clay:
+    sand: 7.0
+    silt: 47.0
+    clay: 46.0
+  
+  clay:
+    sand: 22.0
+    silt: 22.0
+    clay: 56.0
+
+# Statistical ranges from NCSS database (mean and ranges)
+ranges:
+  sand:
+    sand:
+      mean: 91.8
+      min: 85.2
+      max: 99.3
+      std: 3.5
+    silt:
+      mean: 5.5
+      min: 0.1
+      max: 14.6
+      std: 3.2
+    clay:
+      mean: 2.7
+      min: 0.1
+      max: 8.8
+      std: 2.1
+  
+  loamy_sand:
+    sand:
+      mean: 82.0
+      min: 70.4
+      max: 89.5
+      std: 4.8
+    silt:
+      mean: 12.0
+      min: 0.6
+      max: 29.5
+      std: 6.5
+    clay:
+      mean: 6.0
+      min: 0.1
+      max: 14.1
+      std: 3.2
+  
+  sandy_loam:
+    sand:
+      mean: 65.0
+      min: 43.5
+      max: 83.7
+      std: 10.2
+    silt:
+      mean: 25.0
+      min: 0.1
+      max: 49.9
+      std: 11.8
+    clay:
+      mean: 10.0
+      min: 0.1
+      max: 19.9
+      std: 5.1
+  
+  sandy_clay_loam:
+    sand:
+      mean: 60.0
+      min: 45.1
+      max: 78.2
+      std: 8.3
+    silt:
+      mean: 13.0
+      min: 0.4
+      max: 27.9
+      std: 6.8
+    clay:
+      mean: 27.0
+      min: 20.0
+      max: 34.9
+      std: 3.7
+  
+  sandy_clay:
+    sand:
+      mean: 52.0
+      min: 45.1
+      max: 63.1
+      std: 4.5
+    silt:
+      mean: 7.0
+      min: 0.3
+      max: 19.7
+      std: 4.9
+    clay:
+      mean: 41.0
+      min: 35.0
+      max: 51.8
+      std: 4.2
+  
+  loam:
+    sand:
+      mean: 40.0
+      min: 23.3
+      max: 52.2
+      std: 7.2
+    silt:
+      mean: 40.0
+      min: 28.0
+      max: 49.9
+      std: 5.5
+    clay:
+      mean: 20.0
+      min: 7.0
+      max: 27.4
+      std: 5.1
+  
+  silt_loam:
+    sand:
+      mean: 20.0
+      min: 0.3
+      max: 48.1
+      std: 12.0
+    silt:
+      mean: 65.0
+      min: 50.0
+      max: 87.4
+      std: 9.4
+    clay:
+      mean: 15.0
+      min: 0.1
+      max: 27.2
+      std: 6.8
+  
+  silt:
+    sand:
+      mean: 8.0
+      min: 0.0
+      max: 18.3
+      std: 4.6
+    silt:
+      mean: 87.0
+      min: 80.0
+      max: 95.5
+      std: 3.9
+    clay:
+      mean: 5.0
+      min: 0.1
+      max: 11.9
+      std: 3.0
+  
+  clay_loam:
+    sand:
+      mean: 32.0
+      min: 20.1
+      max: 45.0
+      std: 6.2
+    silt:
+      mean: 34.0
+      min: 15.1
+      max: 52.9
+      std: 9.5
+    clay:
+      mean: 34.0
+      min: 27.0
+      max: 39.9
+      std: 3.2
+  
+  silty_clay_loam:
+    sand:
+      mean: 10.0
+      min: 0.0
+      max: 20.0
+      std: 5.0
+    silt:
+      mean: 56.0
+      min: 40.2
+      max: 72.6
+      std: 8.1
+    clay:
+      mean: 34.0
+      min: 27.0
+      max: 40.0
+      std: 3.3
+  
+  silty_clay:
+    sand:
+      mean: 7.0
+      min: 0.0
+      max: 19.6
+      std: 4.9
+    silt:
+      mean: 47.0
+      min: 40.0
+      max: 59.6
+      std: 4.9
+    clay:
+      mean: 46.0
+      min: 40.0
+      max: 59.4
+      std: 4.9
+  
+  clay:
+    sand:
+      mean: 22.0
+      min: 0.0
+      max: 45.0
+      std: 11.3
+    silt:
+      mean: 22.0
+      min: 1.7
+      max: 39.9
+      std: 9.6
+    clay:
+      mean: 56.0
+      min: 40.0
+      max: 95.0
+      std: 13.8
+
+# Common texture class name aliases and variations
+aliases:
+  silty_sand: loamy_sand
+  loamy_fine_sand: loamy_sand
+  fine_sand: sand
+  coarse_sand: sand
+  very_fine_sand: sand
+  sandy: sand
+  silty: silt
+  clayey: clay
+  heavy_clay: clay
+  light_clay: clay_loam
