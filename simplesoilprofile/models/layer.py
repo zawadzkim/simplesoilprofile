@@ -131,3 +131,65 @@ class SoilLayer(BaseModel):
             return [top, bottom]
         
         return compute_sublayer_boundaries(top, bottom, self.discretization)
+    
+    def predict_van_genuchten(self, method: Literal["rosetta",]):
+        """Predict van Genuchten parameters from soil texture."""
+        if method == "rosetta":
+            input = [
+                [self.sand_content, self.silt_content, self.clay_content]
+            ]
+            soildata = SoilData.from_array(input)
+
+            mean, stdev, codes = rosetta(2, soildata)
+            logger.debug("Raw Rosetta output (mean values): %s", mean)
+            
+            # Convert from log10 values for alpha, n, and k_sat
+            self.theta_res = mean[0][0]  # Residual water content
+            self.theta_sat = mean[0][1]  # Saturated water content
+            self.alpha = 10 ** mean[0][2]  # Convert from log10(1/cm)
+            self.n = 10 ** mean[0][3]      # Convert from log10(-)
+            self.k_sat = 10 ** mean[0][4]  # Convert from log10(cm/day)
+
+            logger.info("Predicted van Genuchten parameters for layer '%s'")
+
+
+    def enrich_soil_layer_from_texture_class(
+            self,
+            texture_class: str
+        ) -> 'SoilLayer':
+        """
+        Add sand/silt/clay percentages to a SoilLayer based on texture class.
+        
+        Parameters
+        ----------
+        layer : SoilLayer
+            Soil layer to enrich
+        texture_class : str
+            Texture class name from field observations
+            
+        Returns
+        -------
+        SoilLayer
+            Updated layer with estimated percentages
+        """
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        data_path = os.path.join(project_root, 'simplesoilprofile', 'models', 'data', 'usda_texture.yaml')
+        texture_converter = SoilTextureConverter(data_path)
+
+        # Get percentages from texture class
+        sand, silt, clay = texture_converter.class_to_percentages(texture_class)
+        
+        # Update layer
+        self.sand_content = sand
+        self.silt_content = silt
+        self.clay_content = clay
+        self.texture_class = texture_class
+        
+        # Add metadata about the conversion
+        self.description = (
+            f"{self.description or ''} "
+            f"[Texture fractions estimated from class '{texture_class}' "
+            f"using {texture_converter.metadata['reference']}]"
+        )
+        
+        return None
