@@ -1,10 +1,17 @@
 """Soil layer model representing a single layer with physical properties."""
 
-from typing import Optional, List
-from pydantic import BaseModel, Field, model_validator
+from typing import Optional, List, Literal
+from pydantic import BaseModel, Field, model_validator, computed_field
+
+from rosetta import SoilData, rosetta
 
 from .discretization import LayerDiscretization, compute_sublayer_boundaries
-
+from simplesoilprofile.models.metadata import SoilLayerMetadata as M
+from simplesoilprofile.utils.logging import setup_logger
+from simplesoilprofile.models.texture_conversion import SoilTextureConverter
+import os
+# Set up module-level logger
+logger = setup_logger(__name__)
 
 class SoilLayer(BaseModel):
     """A soil layer with uniform properties.
@@ -47,6 +54,9 @@ class SoilLayer(BaseModel):
     @model_validator(mode='after')
     def validate_water_contents(self) -> 'SoilLayer':
         """Validate that residual water content is less than saturated water content."""
+        if not self.theta_res or not self.theta_sat:
+            return self
+    
         if self.theta_res >= self.theta_sat:
             raise ValueError("Residual water content must be less than saturated water content")
         return self
