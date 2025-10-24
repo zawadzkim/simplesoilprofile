@@ -1,8 +1,8 @@
 """Layer discretization models and utilities."""
 
 from enum import Enum
-from typing import List, Optional
-from pydantic import BaseModel, Field, model_validator
+from typing import List
+from pydantic import BaseModel, Field, model_validator, computed_field
 import numpy as np
 
 class DiscretizationType(str, Enum):
@@ -25,6 +25,11 @@ class LayerDiscretization(BaseModel):
         description="Number of sublayers to create",
         gt=0
     )
+    num_compartments: int = Field(
+        ...,
+        description="Number of compartments to create",
+        gt=0
+    )
     log_density: float = Field(
         1.0,
         description="Density parameter for logarithmic spacing (higher = more dense)",
@@ -37,6 +42,25 @@ class LayerDiscretization(BaseModel):
         if self.type != DiscretizationType.EVEN and self.log_density <= 0:
             raise ValueError("log_density must be positive for logarithmic discretization")
         return self
+        
+    @computed_field
+    @property
+    def compartment_heights(self) -> List[float]:
+        """Get the ordered list of compartment heights for this discretization.
+        
+        The heights are calculated based on the discretization type and parameters.
+        The order is from top to bottom of the layer.
+        
+        Returns:
+            List of compartment heights [cm] in order from top to bottom.
+            For EVEN discretization, all heights are equal.
+            For logarithmic discretizations, heights vary according to the spacing function.
+        """
+        # Get sublayer boundaries for a unit thickness (1cm) layer
+        # (we'll use the ratios, actual heights will be scaled by layer thickness)
+        boundaries = compute_sublayer_boundaries(0, 1, self)
+        heights = list(np.diff(boundaries))
+        return heights
 
 def compute_sublayer_boundaries(
     top: float,
