@@ -10,7 +10,7 @@ from simplesoilprofile.models.metadata import SoilLayerMetadata as M
 from simplesoilprofile.utils.logging import setup_logger
 from simplesoilprofile.models.texture_conversion import SoilTextureConverter
 import os
-# Set up module-level logger
+
 logger = setup_logger(__name__)
 
 class SoilLayer(BaseModel):
@@ -120,7 +120,6 @@ class SoilLayer(BaseModel):
         else:
             raise ValueError("Sum of fractions is zero or negative")
 
-
     def get_sublayer_boundaries(self, top: float, bottom: float) -> List[float]:
         """Get the sublayer boundary depths for this layer.
         
@@ -157,11 +156,10 @@ class SoilLayer(BaseModel):
 
             logger.info("Predicted van Genuchten parameters for layer '%s'")
 
-
-    def enrich_soil_layer_from_texture_class(
+    def infer_fractions_from_texture(
             self,
             texture_class: str
-        ) -> 'SoilLayer':
+        ) -> None:
         """
         Add sand/silt/clay percentages to a SoilLayer based on texture class.
         

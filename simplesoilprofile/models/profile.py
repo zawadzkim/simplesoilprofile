@@ -84,3 +84,48 @@ class SoilProfile(BaseModel):
         for depths in self.get_sublayer_boundaries().values():
             all_depths.extend(depths)
         return sorted(list(set(all_depths)))
+
+def get_profile_from_dov(
+    location: Point,
+    fetch_elevation: bool = False,
+    crs: str = "EPSG:31370"
+) -> Optional[SoilProfile]:
+    """Fetch a soil profile from DOV WMS at a specific location.
+
+    This function queries the DOV WMS service for soil texture data at the given
+    location and constructs a SoilProfile object.
+
+    Args:
+        location: Shapely Point representing the location (x, y coordinates)
+        fetch_elevation: Whether to fetch elevation data for the profile surface
+        crs: Coordinate reference system of the input location
+
+    Returns:
+        SoilProfile object or None if data not found
+    """
+    from dovwms import get_profile_from_dov
+    profile_data = get_profile_from_dov(
+        location.x,
+        location.y,
+        fetch_elevation=fetch_elevation,
+        crs=crs
+    )
+    profile = SoilProfile(
+        name="DOV Soil Profile",
+        location=location,
+        elevation=profile_data.get("elevation").get("elevation") if fetch_elevation else None,
+        layers=[
+            SoilLayer(
+                name=layer["name"],
+                layer_top=layer["layer_top"],
+                layer_bottom=layer["layer_bottom"],
+                sand_content=layer["sand_content"],
+                silt_content=layer["silt_content"],
+                clay_content=layer["clay_content"],
+                metadata=layer.get("metadata", {})
+            )
+            for layer in profile_data["layers"]
+        ],
+        layer_bottoms=[layer["layer_bottom"] for layer in profile_data["layers"]]
+    )
+    return profile
