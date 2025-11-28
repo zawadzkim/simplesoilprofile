@@ -148,7 +148,7 @@ def plot_profile(
 
     # Add title with profile information
     title = f"Soil Profile: {profile.name}"
-    if any(coord is not None for coord in [profile.location.x, profile.location.y, profile.elevation]):
+    if profile.location is not None and any(coord is not None for coord in [profile.location.x, profile.location.y, profile.elevation]):
         coords = []
         if profile.location.x is not None and profile.location.y is not None:
             coords.append(f"x={profile.location.x:.1f}, y={profile.location.y:.1f}")
