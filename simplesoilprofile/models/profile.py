@@ -82,7 +82,7 @@ class SoilProfile(BaseModel):
         all_depths = []
         for depths in self.get_sublayer_boundaries().values():
             all_depths.extend(depths)
-        return sorted(list(set(all_depths)))
+        return sorted(set(all_depths))
 
 def get_profile_from_dov(
     location: Point,

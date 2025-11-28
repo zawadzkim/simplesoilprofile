@@ -7515,7 +7515,7 @@ packages:
 - pypi: ./
   name: simplesoilprofile
   version: 0.0.2
-  sha256: cf7bdc047fad7a17e8c19ad471a32f7a1a7119b58c5e53dfa8a3d64e5d0b7c27
+  sha256: 3db9d412f8a4666ee3ab27cda6882d9341d1be2d866348385555035273a79dbe
   requires_dist:
   - pydantic>=2.4.2
   - numpy>=1.24.0

@@ -4,14 +4,14 @@ import yaml
 
 class SoilTextureConverter:
     """Convert between soil texture class names and sand/silt/clay percentages.
-    
+
     Uses USDA classification data loaded from YAML configuration file.
     """
 
     def __init__(self, config_path: str = 'usda_texture_data.yaml'):
         """
         Initialize with YAML configuration file.
-        
+
         Parameters
         ----------
         config_path : str
@@ -44,7 +44,7 @@ class SoilTextureConverter:
     ) -> tuple[float, float, float]:
         """
         Convert texture class name to sand/silt/clay percentages.
-        
+
         Parameters
         ----------
         texture_class : str
@@ -53,12 +53,12 @@ class SoilTextureConverter:
             'centroid' for geometric centroid or 'mean' for statistical mean
         normalize : bool
             Whether to normalize to sum to 100%
-            
+
         Returns
         -------
         tuple[float, float, float]
             (sand, silt, clay) percentages
-            
+
         Examples
         --------
         >>> converter = SoilTextureConverter()
@@ -108,12 +108,12 @@ class SoilTextureConverter:
     def get_ranges(self, texture_class: str) -> dict:
         """
         Get statistical ranges for a texture class.
-        
+
         Parameters
         ----------
         texture_class : str
             Soil texture class name
-            
+
         Returns
         -------
         dict

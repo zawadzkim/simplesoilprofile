@@ -6,11 +6,11 @@ import sys
 
 def setup_logger(name: str, level: str = "INFO") -> logging.Logger:
     """Set up a logger with consistent formatting.
-    
+
     Args:
         name: Name of the logger, typically __name__ of the module
         level: Logging level ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
-        
+
     Returns:
         Configured logger instance
     """

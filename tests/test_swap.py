@@ -6,7 +6,6 @@ from simplesoilprofile.models import SoilLayer, SoilProfile
 from simplesoilprofile.models.swap import (
     profile_to_soilhydfunc_table,
     profile_to_texture_table,
-    profile_to_sublayer_table,
 )
 
 
@@ -20,7 +19,7 @@ def test_profile_to_soilhydfunc_table():
         alpha=0.02,
         n=1.5,
         k_sat=10.0,
-        l=0.5,
+        lambda_param=0.5,
     )
 
     layer2 = SoilLayer(
@@ -30,7 +29,7 @@ def test_profile_to_soilhydfunc_table():
         alpha=0.01,
         n=1.3,
         k_sat=5.0,
-        l=0.5,
+        lambda_param=0.5,
     )
 
     profile = SoilProfile(
@@ -41,16 +40,16 @@ def test_profile_to_soilhydfunc_table():
 
     # Convert to table
     table = profile_to_soilhydfunc_table(profile)
-    
+
     # Check basic structure
     assert isinstance(table, pd.DataFrame)
     assert len(table) == 2  # Two layers
-    
+
     # Check expected columns exist (only non-null ones should remain)
     expected_cols = ["ORES", "OSAT", "ALFA", "NPAR", "LEXP", "KSATFIT"]
     for col in expected_cols:
         assert col in table.columns
-    
+
     # Check values
     assert table.iloc[0]["ORES"] == 0.02
     assert table.iloc[0]["OSAT"] == 0.4
@@ -77,16 +76,16 @@ def test_profile_to_texture_table():
 
     # Convert to table
     table = profile_to_texture_table(profile)
-    
+
     # Check basic structure
     assert isinstance(table, pd.DataFrame)
     assert len(table) == 1
-    
+
     # Check columns
     expected_cols = ["PCLAY", "PSILT", "PSAND", "ORGMAT"]
     for col in expected_cols:
         assert col in table.columns
-    
+
     # Check values
     assert table.iloc[0]["PCLAY"] == 25.0
     assert table.iloc[0]["PSILT"] == 35.0

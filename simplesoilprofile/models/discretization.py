@@ -48,10 +48,10 @@ class LayerDiscretization(BaseModel):
     @property
     def compartment_heights(self) -> list[float]:
         """Get the ordered list of compartment heights for this discretization.
-        
+
         The heights are calculated based on the discretization type and parameters.
         The order is from top to bottom of the layer.
-        
+
         Returns:
             List of compartment heights [cm] in order from top to bottom.
             For EVEN discretization, all heights are equal.
@@ -69,12 +69,12 @@ def compute_sublayer_boundaries(
     discretization: LayerDiscretization
 ) -> list[float]:
     """Compute sublayer boundaries based on discretization configuration.
-    
+
     Args:
         top: Top depth of the layer [cm]
         bottom: Bottom depth of the layer [cm]
         discretization: Discretization configuration
-        
+
     Returns:
         List of boundary depths [cm], including top and bottom
     """

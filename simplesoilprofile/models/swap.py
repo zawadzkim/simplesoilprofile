@@ -9,7 +9,7 @@ def profile_to_soilhydfunc_table(
     profile: SoilProfile,
 ) -> pd.DataFrame:
     """Convert a SoilProfile to a SWAP-compatible SOILHYDRFUNC table.
-    
+
     Args:
         profile: The soil profile to convert
 
@@ -24,7 +24,7 @@ def profile_to_soilhydfunc_table(
             "OSAT": layer.theta_sat,
             "ALFA": layer.alpha,
             "NPAR": layer.n,
-            "LEXP": layer.l,
+            "LEXP": layer.lambda_param,
             "KSATFIT": layer.k_sat,
             "H_ENPR": layer.h_enpr,
             "KSATEXM": layer.ksatexm,
@@ -62,7 +62,7 @@ def profile_to_texture_table(
     profile: SoilProfile,
 ) -> pd.DataFrame:
     """Convert a SoilProfile to a SWAP-compatible SOILTEXTURE table.
-    
+
     Args:
         profile: The soil profile to convert
 

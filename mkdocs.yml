@@ -5,7 +5,7 @@ site_description: Simple soil profile for hydrological modelling (particularily 
 site_author: Mateusz Zawadzki
 edit_uri: edit/main/docs/
 repo_name: zawadzkim/simplesoilprofile
-copyright: Maintained by <a href="https://zawadzkim.com">Florian</a>.
+copyright: Maintained by <a href="https://zawadzkim.com">Mateusz Zawadzki</a>.
 
 nav:
   - Home: index.md

@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, HttpUrl
 
 class SoilLayerMetadata(BaseModel):
     """Metadata describing the source and quality of a measurement.
-    
+
     This class captures provenance information for soil measurements,
     following best practices for scientific data traceability and reproducibility.
     """

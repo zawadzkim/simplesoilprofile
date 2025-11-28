@@ -16,7 +16,7 @@ logger = setup_logger(__name__)
 
 class SoilLayer(BaseModel):
     """A soil layer with uniform properties.
-    
+
     This class represents a soil layer with van Genuchten parameters and other
     properties needed for hydrological modeling, particularly for SWAP model
     integration. The layer can be discretized into sublayers for numerical computation.
@@ -35,7 +35,7 @@ class SoilLayer(BaseModel):
     alpha: float | None = Field(None, description="Shape parameter alpha [1/cm]", gt=0.0)
     n: float | None = Field(None, description="Shape parameter n [-]", gt=1.0)
     k_sat: float | None = Field(None, description="Saturated hydraulic conductivity [cm/day]", gt=0.0)
-    l: float | None = Field(0.5, description="Tortuosity parameter lambda [-]")
+    lambda_param: float | None = Field(0.5, description="Tortuosity parameter lambda [-]", alias="l")
     alphaw: float | None = Field(None, description="Alfa parameter of main wetting curve [cm]", ge=0.0, le=100.0)
     h_enpr: float | None = Field(None, description="Air entry pressure head [cm]", ge=-40.0, le=0)
     ksatexm: float | None = Field(None, description="Measured hydraulic conductivity at saturated conditions [cm/day]", ge=0.0, le=1e5)
@@ -76,19 +76,19 @@ class SoilLayer(BaseModel):
     ) -> tuple[float, float, float]:
         """
         Normalize soil texture fractions to sum to 100%.
-        
+
         Parameters
         ----------
         sand, silt, clay : float
             Soil fraction percentages
         tolerance : float
             Maximum acceptable deviation from 100% before normalization (default: 2%)
-            
+
         Returns
         -------
         tuple[float, float, float]
             Normalized (sand, silt, clay) percentages
-            
+
         Examples
         --------
         >>> normalize_soil_fractions(72.97, 22.44, 3.61)
@@ -123,11 +123,11 @@ class SoilLayer(BaseModel):
 
     def get_sublayer_boundaries(self, top: float, bottom: float) -> list[float]:
         """Get the sublayer boundary depths for this layer.
-        
+
         Args:
             top: Top depth of the layer [cm]
             bottom: Bottom depth of the layer [cm]
-            
+
         Returns:
             List of boundary depths [cm], including top and bottom depths.
             If no discretization is configured, returns [top, bottom].
@@ -140,12 +140,12 @@ class SoilLayer(BaseModel):
     def predict_van_genuchten(self, method: Literal["rosetta",]):
         """Predict van Genuchten parameters from soil texture."""
         if method == "rosetta":
-            input = [
+            input_data = [
                 [self.sand_content, self.silt_content, self.clay_content]
             ]
-            soildata = SoilData.from_array(input)
+            soildata = SoilData.from_array(input_data)
 
-            mean, stdev, codes = rosetta(2, soildata)
+            mean, _stdev, _codes = rosetta(2, soildata)
             logger.debug("Raw Rosetta output (mean values): %s", mean)
 
             # Convert from log10 values for alpha, n, and k_sat
@@ -163,14 +163,14 @@ class SoilLayer(BaseModel):
         ) -> None:
         """
         Add sand/silt/clay percentages to a SoilLayer based on texture class.
-        
+
         Parameters
         ----------
         layer : SoilLayer
             Soil layer to enrich
         texture_class : str
             Texture class name from field observations
-            
+
         Returns
         -------
         SoilLayer

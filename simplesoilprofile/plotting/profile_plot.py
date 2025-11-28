@@ -34,7 +34,7 @@ def plot_profile(
     show_sublayers: bool = True,
 ) -> plt.Axes:
     """Plot a soil profile showing layers and their properties.
-    
+
     Args:
         profile: The soil profile to plot
         ax: Optional matplotlib axes to plot on
@@ -43,7 +43,7 @@ def plot_profile(
         show_depths: Whether to show depth labels
         show_properties: Whether to show soil properties in annotations
         show_sublayers: Whether to show sublayer boundaries for discretized layers
-        
+
     Returns:
         The matplotlib axes object containing the plot
     """
