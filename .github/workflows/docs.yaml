@@ -1,0 +1,25 @@
+name: Documentation
+
+on:
+  workflow_call:
+    # Called by CD workflow after release creation
+    outputs:
+      artifact-name:
+        description: "Name of the generated docs artifact"
+        value: ${{ jobs.docs.outputs.artifact-name }}
+  workflow_dispatch:
+    # Allow manual documentation builds
+
+permissions:
+  contents: read
+  id-token: write
+  pages: write
+
+jobs:
+  docs:
+    uses: zawadzkim/shared-gh-workflows/.github/workflows/pixi-docs.yml@pixi
+    with:
+      pixi-version: 'v0.59.0'
+      docs-environment: 'docs'
+      docs-build-command: 'mkdocs build'
+      deploy: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' }}
