@@ -1,13 +1,17 @@
 """Tests for the SWAP integration module."""
 
-import io
+import pandas as pd
 
 from simplesoilprofile.models import SoilLayer, SoilProfile
-from simplesoilprofile.models.swap import write_swap_soil_file
+from simplesoilprofile.models.swap import (
+    profile_to_soilhydfunc_table,
+    profile_to_texture_table,
+    profile_to_sublayer_table,
+)
 
 
-def test_swap_file_generation():
-    """Test generating SWAP soil input file."""
+def test_profile_to_soilhydfunc_table():
+    """Test converting profile to SOILHYDRFUNC table."""
     # Create a test profile
     layer1 = SoilLayer(
         name="TopSoil",
@@ -32,26 +36,59 @@ def test_swap_file_generation():
     profile = SoilProfile(
         name="Test Profile",
         layers=[layer1, layer2],
-        layer_depths={
-            0: (0, 30),
-            1: (30, 100),
-        },
+        layer_bottoms=[30, 100],
     )
 
-    # Write to a string buffer
-    output = io.StringIO()
-    write_swap_soil_file(profile, output)
-    content = output.getvalue()
+    # Convert to table
+    table = profile_to_soilhydfunc_table(profile)
+    
+    # Check basic structure
+    assert isinstance(table, pd.DataFrame)
+    assert len(table) == 2  # Two layers
+    
+    # Check expected columns exist (only non-null ones should remain)
+    expected_cols = ["ORES", "OSAT", "ALFA", "NPAR", "LEXP", "KSATFIT"]
+    for col in expected_cols:
+        assert col in table.columns
+    
+    # Check values
+    assert table.iloc[0]["ORES"] == 0.02
+    assert table.iloc[0]["OSAT"] == 0.4
+    assert table.iloc[1]["ORES"] == 0.05
+    assert table.iloc[1]["OSAT"] == 0.45
 
-    # Check basic content
-    assert "Test Profile" in content
-    assert "2    ! ISOILLAY = number of soil layers" in content
-    assert "TopSoil" in content
-    assert "Subsoil" in content
 
-    # Check layer thicknesses
-    assert "30.0 70.0    ! HSUBLAY = thickness of soil layers [cm]" in content
+def test_profile_to_texture_table():
+    """Test converting profile to SOILTEXTURE table."""
+    # Create a test profile with texture data
+    layer1 = SoilLayer(
+        name="TopSoil",
+        clay_content=25.0,
+        silt_content=35.0,
+        sand_content=40.0,
+        organic_matter=2.5,
+    )
 
-    # Check van Genuchten parameters are included
-    for param in ["ORES", "OSAT", "ALFA", "NPAR", "KSAT", "LEXP"]:
-        assert param in content
+    profile = SoilProfile(
+        name="Test Profile",
+        layers=[layer1],
+        layer_bottoms=[30],
+    )
+
+    # Convert to table
+    table = profile_to_texture_table(profile)
+    
+    # Check basic structure
+    assert isinstance(table, pd.DataFrame)
+    assert len(table) == 1
+    
+    # Check columns
+    expected_cols = ["PCLAY", "PSILT", "PSAND", "ORGMAT"]
+    for col in expected_cols:
+        assert col in table.columns
+    
+    # Check values
+    assert table.iloc[0]["PCLAY"] == 25.0
+    assert table.iloc[0]["PSILT"] == 35.0
+    assert table.iloc[0]["PSAND"] == 40.0
+    assert table.iloc[0]["ORGMAT"] == 2.5
