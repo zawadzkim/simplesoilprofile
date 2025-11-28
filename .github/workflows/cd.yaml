@@ -30,4 +30,3 @@ jobs:
       conda-forge-branch: 'auto-update'
     secrets:
       PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
-      CONDA_FORGE_TOKEN: ${{ secrets.CONDA_FORGE_TOKEN }}
