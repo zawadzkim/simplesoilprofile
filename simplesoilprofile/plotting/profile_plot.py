@@ -1,15 +1,14 @@
 """Plotting utilities for visualizing soil profiles."""
 
+
 import matplotlib.pyplot as plt
-import numpy as np
-from typing import Optional, Dict, Tuple, List
 
 from simplesoilprofile.models.layer import SoilLayer
+
 from ..models import SoilProfile
 
-
 # Default color mapping for common soil textures
-DEFAULT_TEXTURE_COLORS: Dict[str, str] = {
+DEFAULT_TEXTURE_COLORS: dict[str, str] = {
     'sand': '#c2b280',       # Sand color
     'loamy sand': '#bcaa7d', # Slightly darker sand
     'sandy loam': '#b5a077', # Light brown
@@ -27,9 +26,9 @@ DEFAULT_TEXTURE_COLORS: Dict[str, str] = {
 
 def plot_profile(
     profile: SoilProfile,
-    ax: Optional[plt.Axes] = None,
-    figsize: Tuple[float, float] = (8, 12),
-    texture_colors: Optional[Dict[str, str]] = None,
+    ax: plt.Axes | None = None,
+    figsize: tuple[float, float] = (8, 12),
+    texture_colors: dict[str, str] | None = None,
     show_depths: bool = True,
     show_layer_properties: bool = True,
     show_sublayers: bool = True,
@@ -48,7 +47,7 @@ def plot_profile(
     Returns:
         The matplotlib axes object containing the plot
     """
-    
+
     def _show_depths(ax: plt.Axes):
         ax.yaxis.set_major_locator(plt.MultipleLocator(20))
         ax.yaxis.set_minor_locator(plt.MultipleLocator(5))
@@ -59,13 +58,17 @@ def plot_profile(
             f"Layer: {layer.name}",
             f"Texture: {layer.texture_class or 'Unknown'}"
         ]
-        
+
         if all(x is not None for x in [layer.clay_content, layer.silt_content, layer.sand_content]):
             props.append(f"Clay/Silt/Sand: {layer.clay_content:.0f}/{layer.silt_content:.0f}/{layer.sand_content:.0f}%")
-        
-        props.append(f"θr/θs: {layer.theta_res:.3f}/{layer.theta_sat:.3f}")
-        props.append(f"Ks: {layer.k_sat:.2f} cm/d")
-        
+
+        # Only show hydraulic properties if they exist
+        if layer.theta_res is not None and layer.theta_sat is not None:
+            props.append(f"θr/θs: {layer.theta_res:.3f}/{layer.theta_sat:.3f}")
+
+        if layer.k_sat is not None:
+            props.append(f"Ks: {layer.k_sat:.2f} cm/d")
+
         # Add text annotation
         mid_depth = (top + bottom) / 2
         ax.text(
@@ -91,24 +94,24 @@ def plot_profile(
 
     if ax is None:
         _, ax = plt.subplots(figsize=figsize)
-    
+
     if texture_colors is None:
         texture_colors = DEFAULT_TEXTURE_COLORS
-    
+
     # Sort layers by depth
     sorted_depths = sorted(profile.layer_bounds.items(), key=lambda x: x[0])
     total_depth = profile.profile_depth
-    
+
     # Plot each layer
     for layer_idx, (top, bottom) in sorted_depths:
         layer = profile.layers[layer_idx]
-        
+
         # Get color based on texture class or use default
         color = texture_colors.get(
             layer.texture_class.lower() if layer.texture_class else 'unknown',
             '#808080'  # Default gray for unknown textures
         )
-        
+
         # Plot the layer as a rectangle
         rect = plt.Rectangle(
             (0, -bottom),           # (x, y) of bottom-left corner
@@ -119,29 +122,29 @@ def plot_profile(
             linewidth=0.5,
         )
         ax.add_patch(rect)
-        
+
         # Add sublayer lines if enabled and layer has discretization
         if show_sublayers and layer.discretization is not None:
             _show_sublayers(layer, top, bottom, ax)
-        
+
         # Add layer information if requested
         if show_layer_properties:
             _format_layer_properties(layer, ax)
-    
+
     # Set axis limits and labels
     ax.set_xlim(-0.1, 2.0)  # Leave space for annotations
     ax.set_ylim(-total_depth * 1.1, 0)  # Add 10% padding at bottom
-    
+
     # Remove x-axis and right spine
     ax.xaxis.set_visible(False)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.spines['bottom'].set_visible(False)
-    
+
     # Add depth ticks if requested
     if show_depths:
         _show_depths(ax=ax)
-    
+
 
     # Add title with profile information
     title = f"Soil Profile: {profile.name}"
@@ -153,8 +156,8 @@ def plot_profile(
             coords.append(f"z={profile.elevation:.1f}")
         if coords:
             title += f"\n({', '.join(coords)})"
-            
+
     ax.set_title(title)
     ax.set_ylabel('Depth [cm]')
-    
+
     return ax

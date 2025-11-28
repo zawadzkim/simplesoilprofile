@@ -3,6 +3,7 @@
 import logging
 import sys
 
+
 def setup_logger(name: str, level: str = "INFO") -> logging.Logger:
     """Set up a logger with consistent formatting.
     
@@ -14,7 +15,7 @@ def setup_logger(name: str, level: str = "INFO") -> logging.Logger:
         Configured logger instance
     """
     logger = logging.getLogger(name)
-    
+
     # Only add handlers if the logger doesn't have any
     if not logger.handlers:
         handler = logging.StreamHandler(sys.stdout)
@@ -24,10 +25,10 @@ def setup_logger(name: str, level: str = "INFO") -> logging.Logger:
         )
         handler.setFormatter(formatter)
         logger.addHandler(handler)
-    
+
     # Set level
     logger.setLevel(getattr(logging, level.upper()))
-    
+
     return logger
 
 

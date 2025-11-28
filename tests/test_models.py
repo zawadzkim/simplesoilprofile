@@ -1,6 +1,7 @@
 """Tests for the core models module."""
 
 import pytest
+
 from simplesoilprofile.models import SoilLayer, SoilProfile
 
 
@@ -20,7 +21,7 @@ def test_soil_layer_creation():
         silt_content=20.0,
         sand_content=70.0,
     )
-    
+
     assert layer.name == "Test Layer"
     assert layer.theta_res == 0.02
     assert layer.texture_class == "sandy loam"
@@ -38,7 +39,7 @@ def test_soil_layer_validation():
             n=1.5,
             k_sat=10.0,
         )
-    
+
     # Test invalid texture composition
     with pytest.raises(ValueError, match="Clay, silt, and sand contents must sum to 100"):
         SoilLayer(
@@ -64,7 +65,7 @@ def test_soil_profile_creation():
         n=1.5,
         k_sat=10.0,
     )
-    
+
     layer2 = SoilLayer(
         name="Bottom Layer",
         theta_res=0.05,
@@ -73,7 +74,7 @@ def test_soil_profile_creation():
         n=1.3,
         k_sat=5.0,
     )
-    
+
     profile = SoilProfile(
         name="Test Profile",
         layers=[layer1, layer2],
@@ -85,7 +86,7 @@ def test_soil_profile_creation():
         y=200.0,
         z=5.0,
     )
-    
+
     assert len(profile.layers) == 2
     assert profile.get_profile_depth() == 100.0
     assert profile.get_layer_at_depth(25)[0] == layer1
@@ -102,7 +103,7 @@ def test_profile_layer_continuity():
         n=1.5,
         k_sat=10.0,
     )
-    
+
     # Test for gap between layers
     with pytest.raises(ValueError, match="Gap detected between layers"):
         SoilProfile(
@@ -113,7 +114,7 @@ def test_profile_layer_continuity():
                 1: (60, 100),  # Gap between 50-60cm
             },
         )
-    
+
     # Test for overlapping layers
     with pytest.raises(ValueError, match="Layer .* top depth must be less than bottom"):
         SoilProfile(

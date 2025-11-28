@@ -1,15 +1,16 @@
 """Soil layer model representing a single layer with physical properties."""
 
-from typing import Optional, List, Literal
-from pydantic import BaseModel, Field, model_validator, computed_field
+import os
+from typing import Literal
 
+from pydantic import BaseModel, Field, computed_field, model_validator
 from rosetta import SoilData, rosetta
 
-from .discretization import LayerDiscretization, compute_sublayer_boundaries
 from simplesoilprofile.models.metadata import SoilLayerMetadata as M
-from simplesoilprofile.utils.logging import setup_logger
 from simplesoilprofile.models.texture_conversion import SoilTextureConverter
-import os
+from simplesoilprofile.utils.logging import setup_logger
+
+from .discretization import LayerDiscretization, compute_sublayer_boundaries
 
 logger = setup_logger(__name__)
 
@@ -22,31 +23,31 @@ class SoilLayer(BaseModel):
     """
 
     name: str = Field(..., description="Name or identifier of the soil layer")
-    texture_class: Optional[str] = Field(None, description="Soil texture class (e.g., 'sand', 'clay', etc.)")
-    discretization: Optional[LayerDiscretization] = Field(
+    texture_class: str | None = Field(None, description="Soil texture class (e.g., 'sand', 'clay', etc.)")
+    discretization: LayerDiscretization | None = Field(
         None, description="Configuration for layer discretization into sublayers"
     )
-    description: Optional[str] = Field(None, description="Description of the soil layer")
-    
-    # Van Genuchten parameters
-    theta_res: Optional[float] = Field(None, description="Residual water content [cm³/cm³]", ge=0.0, le=1.0)
-    theta_sat: Optional[float] = Field(None, description="Saturated water content [cm³/cm³]", ge=0.0, le=1.0)
-    alpha: Optional[float] = Field(None, description="Shape parameter alpha [1/cm]", gt=0.0)
-    n: Optional[float] = Field(None, description="Shape parameter n [-]", gt=1.0)
-    k_sat: Optional[float] = Field(None, description="Saturated hydraulic conductivity [cm/day]", gt=0.0)
-    l: Optional[float] = Field(0.5, description="Tortuosity parameter lambda [-]")
-    alphaw: Optional[float] = Field(None, description="Alfa parameter of main wetting curve [cm]", ge=0.0, le=100.0)
-    h_enpr: Optional[float] = Field(None, description="Air entry pressure head [cm]", ge=-40.0, le=0)
-    ksatexm: Optional[float] = Field(None, description="Measured hydraulic conductivity at saturated conditions [cm/day]", ge=0.0, le=1e5)
-    bulk_density: Optional[float] = Field(None, description="Bulk density [g/cm³]", gt=0.0)
-    
-    #  texture information (used in heat flow section of SWAP)
-    clay_content: Optional[float] = Field(None, description="Clay content [%]", ge=0.0, le=100.0)
-    silt_content: Optional[float] = Field(None, description="Silt content [%]", ge=0.0, le=100.0)
-    sand_content: Optional[float] = Field(None, description="Sand content [%]", ge=0.0, le=100.0)
-    organic_matter: Optional[float] = Field(None, description="Organic matter content [%]", ge=0.0)
+    description: str | None = Field(None, description="Description of the soil layer")
 
-    metadata: Optional[dict[str, M]] = Field(
+    # Van Genuchten parameters
+    theta_res: float | None = Field(None, description="Residual water content [cm³/cm³]", ge=0.0, le=1.0)
+    theta_sat: float | None = Field(None, description="Saturated water content [cm³/cm³]", ge=0.0, le=1.0)
+    alpha: float | None = Field(None, description="Shape parameter alpha [1/cm]", gt=0.0)
+    n: float | None = Field(None, description="Shape parameter n [-]", gt=1.0)
+    k_sat: float | None = Field(None, description="Saturated hydraulic conductivity [cm/day]", gt=0.0)
+    l: float | None = Field(0.5, description="Tortuosity parameter lambda [-]")
+    alphaw: float | None = Field(None, description="Alfa parameter of main wetting curve [cm]", ge=0.0, le=100.0)
+    h_enpr: float | None = Field(None, description="Air entry pressure head [cm]", ge=-40.0, le=0)
+    ksatexm: float | None = Field(None, description="Measured hydraulic conductivity at saturated conditions [cm/day]", ge=0.0, le=1e5)
+    bulk_density: float | None = Field(None, description="Bulk density [g/cm³]", gt=0.0)
+
+    #  texture information (used in heat flow section of SWAP)
+    clay_content: float | None = Field(None, description="Clay content [%]", ge=0.0, le=100.0)
+    silt_content: float | None = Field(None, description="Silt content [%]", ge=0.0, le=100.0)
+    sand_content: float | None = Field(None, description="Sand content [%]", ge=0.0, le=100.0)
+    organic_matter: float | None = Field(None, description="Organic matter content [%]", ge=0.0)
+
+    metadata: dict[str, M] | None = Field(
         default_factory=dict,
         description="Metadata for each measured parameter, keyed by parameter name"
     )
@@ -56,19 +57,19 @@ class SoilLayer(BaseModel):
         """Validate that residual water content is less than saturated water content."""
         if not self.theta_res or not self.theta_sat:
             return self
-    
+
         if self.theta_res >= self.theta_sat:
             raise ValueError("Residual water content must be less than saturated water content")
         return self
-    
+
     @computed_field
     @property
-    def sum_texture(self) -> Optional[float]:
+    def sum_texture(self) -> float | None:
         """Compute the sum of clay, silt, and sand contents if all are provided."""
         if all(v is not None for v in (self.clay_content, self.silt_content, self.sand_content)):
             return self.clay_content + self.silt_content + self.sand_content
         return None
-    
+
     def normalize_soil_fractions(
         self,
         tolerance: float = 2.0
@@ -94,7 +95,7 @@ class SoilLayer(BaseModel):
         (73.76, 22.68, 3.65)  # Sum was 99.02, now 100.0
         """
         total = self.sand_content + self.silt_content + self.clay_content
-        
+
         # Check if normalization is needed
         if abs(total - 100.0) < 0.01:  # Already at 100%
             return None
@@ -105,7 +106,7 @@ class SoilLayer(BaseModel):
                 "Sum of soil fractions %.2f%% exceeds tolerance of %.1f%% for layer '%s'",
                 total, tolerance, self.name
             )
-        
+
         # Proportional normalization
         if total > 0:
             logger.warning(
@@ -120,7 +121,7 @@ class SoilLayer(BaseModel):
         else:
             raise ValueError("Sum of fractions is zero or negative")
 
-    def get_sublayer_boundaries(self, top: float, bottom: float) -> List[float]:
+    def get_sublayer_boundaries(self, top: float, bottom: float) -> list[float]:
         """Get the sublayer boundary depths for this layer.
         
         Args:
@@ -133,9 +134,9 @@ class SoilLayer(BaseModel):
         """
         if self.discretization is None:
             return [top, bottom]
-        
+
         return compute_sublayer_boundaries(top, bottom, self.discretization)
-    
+
     def predict_van_genuchten(self, method: Literal["rosetta",]):
         """Predict van Genuchten parameters from soil texture."""
         if method == "rosetta":
@@ -146,7 +147,7 @@ class SoilLayer(BaseModel):
 
             mean, stdev, codes = rosetta(2, soildata)
             logger.debug("Raw Rosetta output (mean values): %s", mean)
-            
+
             # Convert from log10 values for alpha, n, and k_sat
             self.theta_res = mean[0][0]  # Residual water content
             self.theta_sat = mean[0][1]  # Saturated water content
@@ -181,18 +182,18 @@ class SoilLayer(BaseModel):
 
         # Get percentages from texture class
         sand, silt, clay = texture_converter.class_to_percentages(texture_class)
-        
+
         # Update layer
         self.sand_content = sand
         self.silt_content = silt
         self.clay_content = clay
         self.texture_class = texture_class
-        
+
         # Add metadata about the conversion
         self.description = (
             f"{self.description or ''} "
             f"[Texture fractions estimated from class '{texture_class}' "
             f"using {texture_converter.metadata['reference']}]"
         )
-        
+
         return None

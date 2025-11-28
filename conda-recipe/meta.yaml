@@ -1,0 +1,54 @@
+{% set name = "simplesoilprofile" %}
+{% set version = "0.1.0" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/simplesoilprofile-{{ version }}.tar.gz
+  sha256: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+
+build:
+  noarch: python
+  script: {{ PYTHON }} -m pip install . -vv
+  number: 0
+
+requirements:
+  host:
+    - python >=3.11
+    - pip
+    - hatchling
+  run:
+    - python >=3.11
+    - pydantic >=2.0
+    - matplotlib
+    - pandas
+    - numpy
+    - rosetta-soil
+
+test:
+  imports:
+    - simplesoilprofile
+    - simplesoilprofile.models
+    - simplesoilprofile.plotting
+  commands:
+    - pip check
+  requires:
+    - pip
+
+about:
+  home: https://github.com/zawadzkim/simplesoilprofile
+  summary: Simple soil profile modeling for hydrological applications
+  description: |
+    A Python package for creating and managing soil profiles with hydraulic 
+    parameters for hydrological modeling. Supports van Genuchten parameters,
+    texture classification, and integration with hydrological models like SWAP.
+  license: MIT
+  license_file: LICENSE
+  doc_url: https://zawadzkim.github.io/simplesoilprofile/
+  dev_url: https://github.com/zawadzkim/simplesoilprofile
+
+extra:
+  recipe-maintainers:
+    - zawadzkim
