@@ -134,9 +134,11 @@ hatchling = "*"
 
 [tool.pixi.pypi-dependencies]
 simplesoilprofile = { path = ".", editable = true }
+build = "*"
 
 [tool.pixi.feature.dev.dependencies]
 pytest = "*"
+pytest-cov = "*"
 pytest-mock = "*"
 requests-mock = "*"
 mypy = "*"
@@ -162,10 +164,13 @@ notebook = { features = ["notebook"], solve-group = "default" }
 full = { features = ["dev", "docs", "notebook"], solve-group = "default" }
 
 [tool.pixi.tasks]
+# Installation task
+install-dev = "pip install -e ."
+
 # Testing tasks
-test = "pytest tests/ -v"
-test-cov = "pytest tests/ --cov=simplesoilprofile --cov-report=html --cov-report=term"
-test-fast = "pytest tests/ -x -v"
+test = { cmd = "pytest tests/ -v", depends-on = ["install-dev"] }
+test-cov = { cmd = "pytest tests/ --cov=simplesoilprofile --cov-report=html --cov-report=term", depends-on = ["install-dev"] }
+test-fast = { cmd = "pytest tests/ -x -v", depends-on = ["install-dev"] }
 
 # Linting and formatting tasks
 lint = "ruff check simplesoilprofile tests"
