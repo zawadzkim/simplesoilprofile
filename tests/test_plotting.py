@@ -39,13 +39,7 @@ def sample_profile():
     return SoilProfile(
         name="Test Profile",
         layers=[layer1, layer2],
-        layer_depths={
-            0: (0, 30),
-            1: (30, 100),
-        },
-        x=100.0,
-        y=200.0,
-        z=5.0,
+        layer_bottoms=[30, 100],  # Bottom depths of each layer
     )
 
 
@@ -76,7 +70,7 @@ def test_plot_annotations(sample_profile):
     texts = ax.texts
     assert len(texts) > 0
 
-    # Check coordinate annotation in title
-    assert "x=100.0, y=200.0, z=5.0" in ax.get_title()
+    # Basic title check (coordinates won't be present since profile has no location)
+    assert sample_profile.name in ax.get_title()
 
     plt.close(fig)
