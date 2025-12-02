@@ -23,6 +23,6 @@ jobs:
       pixi-version: 'v0.59.0'
       environment: 'dev'
       test-command: 'pytest tests/ -v --cov=simplesoilprofile --cov-report=term --cov-report=xml'
-      lint-command: 'ruff check .'
+      lint-command: 'lint'
       coverage: true
       upload-artifacts: true

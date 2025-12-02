@@ -191,8 +191,6 @@ class CondaForgeUpdater:
             pr_url = self.create_pull_request(feedstock_repo, branch_name,
                                             package_name, version)
 
-            return pr_url
-
         except ValueError as e:
             if "not found" in str(e):
                 self.logger.warning(
@@ -204,6 +202,8 @@ class CondaForgeUpdater:
                 return ""
             else:
                 raise
+        else:
+            return pr_url
 
 
 def main():
