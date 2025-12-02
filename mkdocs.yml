@@ -9,9 +9,15 @@ copyright: Maintained by <a href="https://zawadzkim.com">Mateusz Zawadzki</a>.
 
 nav:
   - Home: index.md
+  - Tutorials:
+    - notebooks/index.md
+    - Complete Example: notebooks/000-complete-example.ipynb
   - Modules: modules.md
 plugins:
   - search
+  - mkdocs-jupyter:
+      execute: true
+      kernel_name: python3
   - mkdocstrings:
       handlers:
         python:

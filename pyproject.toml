@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "simplesoilprofile"
 description = "Simple soil profile for hydrological modelling (particularily SWAP)."
 keywords = ["soil", "profile", "hydraulic", "properties", "dov", "SWAP"]
-version = "0.0.5"
+version = "0.0.6"
 dependencies = [
     "pydantic>=2.4.2",
     "numpy>=1.24.0",
@@ -40,6 +40,17 @@ classifiers = [
 "Homepage" = "https://github.com/zawadzkim/simplesoilprofile"
 "Repository" = "https://github.com/zawadzkim/simplesoilprofile"
 "Documentation" = "https://zawadzkim.github.io/simplesoilprofile/"
+
+[project.optional-dependencies]
+docs = [
+    "mkdocs-material>=9.7.0",
+    "mkdocs-jupyter==0.24.8",
+    "mkdocs-include-markdown-plugin>=6.2.0",
+    "mkdocs-autorefs>=1.0.1",
+    "mkdocstrings-python>=1.10.3",
+    "mkdocs-awesome-pages-plugin>=2.10.1",
+    "mkdocs-exclude-search>=0.6.6",
+]
 
 [tool.mypy]
 files = ["simplesoilprofile"]
@@ -131,7 +142,7 @@ preview = true
 
 [tool.pixi.workspace]
 channels = ["conda-forge"]
-platforms = ["linux-64", "osx-64", "osx-arm64", "win-64"]
+platforms = ["linux-64", "win-64"]
 
 [tool.pixi.dependencies]
 python = ">=3.11,<3.13"
@@ -149,24 +160,28 @@ pytest-mock = "*"
 requests-mock = "*"
 mypy = "*"
 pre-commit = "*"
-ipykernel = "*"
 nbstripout = "*"
 ruff = "*"
 
-[tool.pixi.feature.docs.dependencies]
-mkdocs = "*"
-mkdocs-material = "*"
-mkdocstrings-python = "*"
+[tool.pixi.feature.docs.pypi-dependencies]
+simplesoilprofile = { path = ".", editable = true }
+mkdocs-material = ">=9.7.0"
+mkdocs-jupyter = "==0.24.8"
+mkdocs-include-markdown-plugin = ">=6.2.0"
+mkdocs-autorefs = ">=1.0.1"
+mkdocstrings-python = ">=1.10.3"
+mkdocs-awesome-pages-plugin = ">=2.10.1"
+mkdocs-exclude-search = ">=0.6.6"
 
-[tool.pixi.feature.notebook.dependencies]
+[tool.pixi.feature.notebook.pypi-dependencies]
 jupyter = "*"
 ipywidgets = "*"
 
 [tool.pixi.environments]
 default = { solve-group = "default" }
 dev = { features = ["dev"], solve-group = "default" }
-docs = { features = ["docs"], solve-group = "default" }
-notebook = { features = ["notebook"], solve-group = "default" }
+docs = { features = ["docs"], solve-group = "docs" }
+notebook = { features = ["notebook"], solve-group = "notebook" }
 full = { features = ["dev", "docs", "notebook"], solve-group = "default" }
 
 [tool.pixi.tasks]
