@@ -4890,8 +4890,8 @@ packages:
   requires_python: '>=3.10'
 - pypi: ./
   name: simplesoilprofile
-  version: 0.0.6
-  sha256: dc458910c1ae642664a454bcc95af4834df3aded55ef45c485c4daed25b9781b
+  version: 0.0.7
+  sha256: 89d839841f7c6c8033b568943a5c29e2735d79163c7f8bd772dcc027931df94f
   requires_dist:
   - pydantic>=2.4.2
   - numpy>=1.24.0
