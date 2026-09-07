@@ -27,7 +27,6 @@ requirements:
     - numpy
     - pyyaml
     - requests
-    - shapely >=2.0
     - rosetta-soil >=0.3
 
 test:

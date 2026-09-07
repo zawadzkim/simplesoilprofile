@@ -19,92 +19,70 @@ A Python package for working with soil profile data in hydrological modeling app
 - API integration framework with example implementation for Belgian DOV
 - Visualization tools for soil profile display
 
+## Units and conventions
+
+All lengths are metres: horizon bottoms, depths, elevation.
+Hydraulic parameters use the Rosetta/SWAP units: α in 1/cm, k_sat in cm/d, bulk density in g/cm³.
+The SWAP exporters convert (depths to cm, bulk density to mg/cm³); nothing else does.
+Objects are immutable: every `with_*` method returns a new, validated object.
+
 ## Quick Start
 
-### Creating a Soil Profile
+### Materials and a profile
 
 ```python
-from simplesoilprofile import SoilLayer, SoilProfile
+from simplesoilprofile import CountRule, DiscretizationType, Horizon, SoilMaterial, SoilProfile
 
-# Create soil layers
-topsoil = SoilLayer(
-    name="Topsoil",
-    description="Sandy loam topsoil",
-    theta_res=0.02,
-    theta_sat=0.4,
-    alpha=0.02,
-    n=1.5,
-    k_sat=10.0,
-    texture_class="sandy loam",
-    clay_content=10.0,
-    silt_content=20.0,
-    sand_content=70.0,
-)
+topsoil = SoilMaterial(name="Topsoil", texture_class="sandy loam", sand_content=65, silt_content=25, clay_content=10,
+                       bulk_density=1.45)
+subsoil = SoilMaterial(name="Subsoil", texture_class="clay loam", sand_content=35, silt_content=35, clay_content=30,
+                       bulk_density=1.55)
 
-subsoil = SoilLayer(
-    name="Subsoil",
-    description="Clay loam subsoil",
-    theta_res=0.05,
-    theta_sat=0.45,
-    alpha=0.01,
-    n=1.3,
-    k_sat=5.0,
-    texture_class="clay loam",
-    clay_content=30.0,
-    silt_content=35.0,
-    sand_content=35.0,
-)
+# Hydraulic parameters from Rosetta (rosetta-soil >= 0.3); with_rosetta returns a new material
+topsoil = topsoil.with_rosetta(version=3)            # texture + bulk density as predictors
+subsoil = subsoil.with_rosetta(version=2)            # texture only
+measured = topsoil.with_(source="lab", source_type="measured", k_sat=42.0)   # provenance travels with the value
 
-# Create a profile (layer bottoms in cm below the surface; the first layer starts at 0)
-from shapely.geometry import Point
-
+rule = CountRule(type=DiscretizationType.EVEN, num_sublayers=2, num_compartments=5)
 profile = SoilProfile(
     name="Test Profile",
-    layers=[topsoil, subsoil],
-    layer_bottoms=[30, 100],
-    location=Point(100.0, 200.0),
-    elevation=5.0,
+    x=247172.56, y=204590.58, crs="EPSG:31370", elevation=33.2,   # elevation in m above the site datum
+    horizons=[
+        Horizon(material=topsoil, bottom=0.3, rule=rule),          # bottoms in metres below the surface
+        Horizon(material=subsoil, bottom=1.0, rule=rule),
+    ],
 )
 ```
 
-A layer whose bottom equals the previous bottom has zero thickness: it is absent at that
-location but keeps its index, so one layer sequence can describe every profile of a site.
+A horizon whose bottom equals the previous bottom has zero thickness: it is absent at that location but keeps its index, so one horizon sequence can describe every profile of a site.
 
-### Predicting hydraulic parameters
-
-```python
-sandy = SoilLayer(name="Sand", sand_content=82, silt_content=13, clay_content=5)
-sandy.predict_van_genuchten(version=2)          # Rosetta 2 on texture; needs rosetta-soil >= 0.3
-sandy.predict_van_genuchten(keep_ksat=True)     # keep a measured k_sat, predict the rest
-```
-
-### Generating SWAP Input
+### SWAP tables
 
 ```python
-from simplesoilprofile.models.discretization import DiscretizationType, LayerDiscretization
-from simplesoilprofile.models.swap import profile_to_soilhydfunc_table, profile_to_sublayer_table
+from simplesoilprofile.swap import soilhydrfunc_table, soilprofile_table
 
-for layer in profile.layers:
-    layer.bulk_density = 1.5  # SWAP requires BDENS for every layer
-    layer.discretization = LayerDiscretization(type=DiscretizationType.EVEN, num_sublayers=2, num_compartments=5)
-
-soilhydrfunc = profile_to_soilhydfunc_table(profile)  # one row per present layer
-soilprofile = profile_to_sublayer_table(profile)      # ISUBLAY / ISOILLAY / HSUBLAY / NCOMP / HCOMP
+soilhydrfunc = soilhydrfunc_table(profile)   # one row per present horizon; BDENS in mg/cm³
+soilprofile = soilprofile_table(profile)     # ISUBLAY / ISOILLAY / HSUBLAY / HCOMP / NCOMP in cm
 ```
 
-The Flemish soil database (DOV) helper `get_profile_from_dov` needs the optional extra:
-`pip install "simplesoilprofile[dov]"`.
+The frames carry pyswap's column names, so `pyswap.components.soilwater.SOILHYDRFUNC.create(soilhydrfunc.to_dict("list"))` consumes them directly; this package does not import pyswap.
+
+### Profiles from DOV
+
+```python
+from simplesoilprofile import profile_from_dov      # needs: pip install "simplesoilprofile[dov]"
+
+profile = profile_from_dov(247172.56, 204590.58, fetch_elevation=True)
+profile = profile.with_material(0, profile.horizons[0].material.with_rosetta(version=2))
+```
 
 ### Visualizing a Profile
 
 ```python
 import matplotlib.pyplot as plt
-from simplesoilprofile.plotting import plot_profile
+from simplesoilprofile import plot_profile
 
-# Create a new figure
 fig, ax = plt.subplots(figsize=(8, 12))
-
-# Plot the profile
 plot_profile(profile, ax=ax, show_layer_properties=True)
 plt.show()
 ```

@@ -2,8 +2,9 @@
 
 from importlib.metadata import PackageNotFoundError, version
 
-from .models import SoilLayer, SoilProfile, get_profile_from_dov
-from .plotting import plot_profile
+from simplesoilprofile.core import CountRule, DiscretizationType, Horizon, ProvenanceEntry, SoilMaterial, SoilProfile
+from simplesoilprofile.plotting import plot_profile
+from simplesoilprofile.sources import profile_from_dov
 
 try:
     __version__ = version("simplesoilprofile")
@@ -11,8 +12,12 @@ except PackageNotFoundError:  # running from a source tree that is not installed
     __version__ = "0.0.0"
 
 __all__ = [
-    "SoilLayer",
+    "CountRule",
+    "DiscretizationType",
+    "Horizon",
+    "ProvenanceEntry",
+    "SoilMaterial",
     "SoilProfile",
-    "get_profile_from_dov",
     "plot_profile",
+    "profile_from_dov",
 ]
