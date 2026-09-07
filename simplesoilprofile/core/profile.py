@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from simplesoilprofile.core.discretization import CountRule
+from simplesoilprofile.core.discretization import Rule, sublayers
 from simplesoilprofile.core.horizon import Horizon
 from simplesoilprofile.core.material import SoilMaterial
 
@@ -126,11 +126,10 @@ class SoilProfile(BaseModel):
 
     def sublayer_boundaries(self) -> dict[int, list[float]]:
         """Sublayer boundary depths [m] per present horizon that carries a rule."""
-        out = {}
-        for i, h in self.present:
-            top, bottom = self.bounds[i]
-            if h.rule is not None:
-                out[i] = h.rule.boundaries(top, bottom)
+        out: dict[int, list[float]] = {}
+        for s in sublayers(self, strict=False):
+            bounds = out.setdefault(s.horizon, [s.top])
+            bounds.append(s.bottom)
         return out
 
     # --- functional updates -----------------------------------------------------------
@@ -148,7 +147,7 @@ class SoilProfile(BaseModel):
         """Return a copy with a new horizon sequence."""
         return self.with_(horizons=[h.model_dump() for h in horizons])
 
-    def with_rule(self, ref: int | str, rule: CountRule | None) -> SoilProfile:
+    def with_rule(self, ref: int | str, rule: Rule | None) -> SoilProfile:
         """Return a copy with the discretization rule of one horizon replaced."""
         i = self.index_of(ref)
         horizons = list(self.horizons)
@@ -176,7 +175,7 @@ class SoilProfile(BaseModel):
         y: float | None = None,
         crs: str = "EPSG:31370",
         elevation: float | None = None,
-        rules: Mapping[str, CountRule | None] | None = None,
+        rules: Mapping[str, Rule | None] | None = None,
     ) -> SoilProfile:
         """Build a profile from library materials: ``sequence`` is ``[(key, bottom_m), ...]`` from the surface down.
 

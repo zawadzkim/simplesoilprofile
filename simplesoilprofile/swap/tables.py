@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import pandas as pd
 
+from simplesoilprofile.core.discretization import sublayers
 from simplesoilprofile.core.profile import SoilProfile
 
 #: SoilMaterial attribute -> SOILHYDRFUNC column, for the parameters SWAP requires.
@@ -65,25 +66,19 @@ def soilhydrfunc_table(profile: SoilProfile) -> pd.DataFrame:
 def soilprofile_table(profile: SoilProfile) -> pd.DataFrame:
     """SOILPROFILE: sublayers and compartments (ISUBLAY, ISOILLAY, HSUBLAY, HCOMP, NCOMP), heights in cm.
 
-    Every present horizon must carry a rule; a horizon without one cannot be silently dropped, because SWAP would then see a profile with a hole in it.
+    Resolved by :func:`~simplesoilprofile.core.discretization.sublayers`: every present horizon needs a rule, thicknesses must be multiples of the compartment height, at most ``MACP`` compartments.
+    Heights are rounded to 1e-6 cm so that metre arithmetic does not leak binary noise into the input file.
     """
-    rows = []
-    isublay = 1
-    for isoillay, (i, h) in enumerate(profile.present, start=1):
-        if h.rule is None:
-            raise ValueError(f"Horizon {i} '{h.material.name}' has no discretization rule; set `rule` before exporting")
-        top, bottom = profile.bounds[i]
-        thickness_cm = (bottom - top) * CM_PER_M
-        for fraction in h.rule.compartment_heights:
-            hsublay = fraction * thickness_cm
-            rows.append({
-                "ISUBLAY": isublay,
-                "ISOILLAY": isoillay,
-                "HSUBLAY": hsublay,
-                "HCOMP": hsublay / h.rule.num_compartments,
-                "NCOMP": h.rule.num_compartments,
-            })
-            isublay += 1
+    rows = [
+        {
+            "ISUBLAY": isublay,
+            "ISOILLAY": s.isoillay,
+            "HSUBLAY": round(s.thickness * CM_PER_M, 6),
+            "HCOMP": round(s.hcomp * CM_PER_M, 6),
+            "NCOMP": s.ncomp,
+        }
+        for isublay, s in enumerate(sublayers(profile), start=1)
+    ]
     return pd.DataFrame(rows)
 
 
