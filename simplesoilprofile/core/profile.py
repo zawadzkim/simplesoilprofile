@@ -7,6 +7,7 @@ Profiles are immutable; every ``with_*`` method returns a new, re-validated obje
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -18,6 +19,8 @@ from simplesoilprofile.core.material import SoilMaterial
 
 if TYPE_CHECKING:
     from shapely.geometry import Point
+
+    from simplesoilprofile.core.library import SoilLibrary
 
 
 class SoilProfile(BaseModel):
@@ -157,6 +160,48 @@ class SoilProfile(BaseModel):
         i = self.index_of(ref)
         horizons = list(self.horizons)
         horizons[i] = horizons[i].model_copy(update={"material": material})
+        return self.with_horizons(horizons)
+
+    # --- library -----------------------------------------------------------------------
+
+    @classmethod
+    def from_library(
+        cls,
+        library: SoilLibrary,
+        sequence: Sequence[tuple[str, float]],
+        *,
+        name: str,
+        description: str | None = None,
+        x: float | None = None,
+        y: float | None = None,
+        crs: str = "EPSG:31370",
+        elevation: float | None = None,
+        rules: Mapping[str, CountRule | None] | None = None,
+    ) -> SoilProfile:
+        """Build a profile from library materials: ``sequence`` is ``[(key, bottom_m), ...]`` from the surface down.
+
+        A key may repeat; a bottom equal to the previous one marks an absent horizon.
+        Every horizon records its ``key`` so the profile can be :meth:`rebuild` after the library changes.
+        ``rules`` assigns a discretization rule per key.
+        """
+        rules = rules or {}
+        horizons = [
+            Horizon(material=library[key], bottom=bottom, rule=rules.get(key), key=key)
+            for key, bottom in sequence
+        ]
+        return cls(name=name, description=description, x=x, y=y, crs=crs, elevation=elevation, horizons=horizons)
+
+    def rebuild(self, library: SoilLibrary) -> SoilProfile:
+        """Return a copy whose materials are taken afresh from ``library`` by key; bottoms and rules are kept.
+
+        Raises:
+            ValueError: a horizon has no key (hand-built profile).
+            KeyError: a key is missing from the library.
+        """
+        missing = [i for i, h in enumerate(self.horizons) if h.key is None]
+        if missing:
+            raise ValueError(f"Profile '{self.name}': horizons {missing} carry no library key; rebuild needs from_library profiles")
+        horizons = [h.model_copy(update={"material": library[h.key]}) for h in self.horizons]  # type: ignore[index]
         return self.with_horizons(horizons)
 
     # --- persistence -------------------------------------------------------------------

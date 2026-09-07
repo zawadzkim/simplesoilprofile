@@ -2,7 +2,15 @@
 
 from importlib.metadata import PackageNotFoundError, version
 
-from simplesoilprofile.core import CountRule, DiscretizationType, Horizon, ProvenanceEntry, SoilMaterial, SoilProfile
+from simplesoilprofile.core import (
+    CountRule,
+    DiscretizationType,
+    Horizon,
+    ProvenanceEntry,
+    SoilLibrary,
+    SoilMaterial,
+    SoilProfile,
+)
 from simplesoilprofile.plotting import plot_profile
 from simplesoilprofile.sources import profile_from_dov
 
@@ -16,6 +24,7 @@ __all__ = [
     "DiscretizationType",
     "Horizon",
     "ProvenanceEntry",
+    "SoilLibrary",
     "SoilMaterial",
     "SoilProfile",
     "plot_profile",

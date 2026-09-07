@@ -56,6 +56,23 @@ profile = SoilProfile(
 
 A horizon whose bottom equals the previous bottom has zero thickness: it is absent at that location but keeps its index, so one horizon sequence can describe every profile of a site.
 
+### A library: define materials once, place them in many profiles
+
+```python
+from simplesoilprofile import SoilLibrary
+
+library = SoilLibrary(name="site", materials={m.name: m for m in (topsoil, subsoil)},
+                      provenance={"retention": "Rosetta on nominal textures"})
+s05 = SoilProfile.from_library(library, [("Topsoil", 0.5), ("Subsoil", 2.4), ("Subsoil", 4.0)],
+                               name="S05", elevation=32.6, rules={"Topsoil": rule, "Subsoil": rule})
+
+fitted = library.with_values({("Subsoil", "k_sat"): 0.17}, note="calibration v4")   # a new library; provenance says 'modeled'
+s05_fitted = s05.rebuild(fitted)                                                     # same geometry, fitted materials
+fitted.to_json("soil_library_fitted.json")
+```
+
+One profile, one site: skip the library and build the horizons by hand.
+
 ### SWAP tables
 
 ```python

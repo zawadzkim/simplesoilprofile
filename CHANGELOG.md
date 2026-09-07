@@ -23,6 +23,11 @@ Nothing from the 0.0.9 API is kept under its old name.
 | `models.swap.profile_to_soilhydfunc_table` etc. | `swap.soilhydrfunc_table`, `swap.soilprofile_table`, `swap.texture_table` |
 | `models.texture_conversion.SoilTextureConverter(path)` | `ptf.texture.texture_system("usda" \| "flemish")` (package data, cached) |
 
+### Added
+
+- `SoilLibrary` (`simplesoilprofile.core.library`): named materials defined once, with library-level provenance; `to_frame()`, `with_values({(key, attribute): value}, note=...)` for fitted values (provenance entries marked 'modeled'), `with_material()`, JSON round trip.
+- `SoilProfile.from_library(library, [(key, bottom_m), ...], rules={key: rule})` and `SoilProfile.rebuild(library)`: profiles are derived from a library and re-derived after a fit; every horizon records its library `key`.
+
 ### Changed
 
 - **All lengths are metres**: horizon bottoms, depths, elevation. The SWAP exporters convert to cm; bulk density (g/cm³) is converted to SWAP's mg/cm³ there as well.
