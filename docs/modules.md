@@ -1,26 +1,32 @@
 # API Reference
 
-## Core Models
+## Core model
 
-::: simplesoilprofile.models.profile
+::: simplesoilprofile.core.material
 
-::: simplesoilprofile.models.layer
+::: simplesoilprofile.core.horizon
 
-::: simplesoilprofile.models.discretization
+::: simplesoilprofile.core.profile
 
-::: simplesoilprofile.models.metadata
+::: simplesoilprofile.core.discretization
+
+## Pedotransfer and texture classes
+
+::: simplesoilprofile.ptf.rosetta
+
+::: simplesoilprofile.ptf.texture
+
+## SWAP tables
+
+::: simplesoilprofile.swap.tables
+
+## Data sources
+
+::: simplesoilprofile.sources.dov
 
 ## Plotting
 
 ::: simplesoilprofile.plotting.profile_plot
-
-## SWAP Integration
-
-::: simplesoilprofile.models.swap
-
-## Texture Conversion
-
-::: simplesoilprofile.models.texture_conversion
 
 ## Utilities
 

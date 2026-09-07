@@ -1,9 +1,12 @@
-"""Layer discretization models and utilities."""
+"""Count-based discretization rules (even or logarithmic spacing of sublayers).
+
+Depth-unit agnostic: the boundaries are computed from the horizon's top and bottom in whatever unit those carry (metres in this package).
+"""
 
 from enum import Enum
 
 import numpy as np
-from pydantic import BaseModel, Field, computed_field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
 
 
 class DiscretizationType(str, Enum):
@@ -14,8 +17,10 @@ class DiscretizationType(str, Enum):
     LOG_BOTTOM = "logarithmic_bottom"
     LOG_BOTH = "logarithmic_both"
 
-class LayerDiscretization(BaseModel):
-    """Configuration for layer discretization."""
+class CountRule(BaseModel):
+    """Discretization by counts: a number of sublayers, each with a number of compartments."""
+
+    model_config = ConfigDict(frozen=True)
 
     type: DiscretizationType = Field(
         ...,
@@ -38,11 +43,15 @@ class LayerDiscretization(BaseModel):
     )
 
     @model_validator(mode='after')
-    def validate_discretization(self) -> 'LayerDiscretization':
+    def validate_discretization(self) -> 'CountRule':
         """Validate discretization parameters."""
         if self.type != DiscretizationType.EVEN and self.log_density <= 0:
             raise ValueError("log_density must be positive for logarithmic discretization")
         return self
+
+    def boundaries(self, top: float, bottom: float) -> list[float]:
+        """Sublayer boundary depths between ``top`` and ``bottom`` (same unit in, same unit out)."""
+        return compute_sublayer_boundaries(top, bottom, self)
 
     @computed_field
     @property
@@ -53,7 +62,7 @@ class LayerDiscretization(BaseModel):
         The order is from top to bottom of the layer.
 
         Returns:
-            List of compartment heights [cm] in order from top to bottom.
+            List of compartment height fractions of the layer thickness, in order from top to bottom.
             For EVEN discretization, all heights are equal.
             For logarithmic discretizations, heights vary according to the spacing function.
         """
@@ -66,7 +75,7 @@ class LayerDiscretization(BaseModel):
 def compute_sublayer_boundaries(
     top: float,
     bottom: float,
-    discretization: LayerDiscretization
+    discretization: CountRule
 ) -> list[float]:
     """Compute sublayer boundaries based on discretization configuration.
 
