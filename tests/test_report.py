@@ -44,7 +44,7 @@ def test_latex_rows_are_data_only_with_provenance():
     rows = [line for line in lines if not line.startswith("%")]
     assert len(rows) == 2 and all(line.endswith(r" \\") for line in rows)
     assert rows[0].startswith(r"L1 topsoil & 92 & 5 & 3 & 1.50 & 0.040 & 0.380 & 0.0500 & 1.480 & 0.50 & 104")
-    assert "-1.28" in rows[1] and rows[1].split(" & ")[-1] == r"0.17 \\"
+    assert "-1.28" in rows[1] and rows[1].split(" & ")[-1] == r"0.170 \\"
     assert r"\begin" not in tex and "&" not in lines[0]
 
 
