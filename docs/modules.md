@@ -12,6 +12,8 @@
 
 ::: simplesoilprofile.core.discretization
 
+::: simplesoilprofile.core.nodes
+
 ## Pedotransfer and texture classes
 
 ::: simplesoilprofile.ptf.rosetta
@@ -23,6 +25,8 @@
 ::: simplesoilprofile.swap.tables
 
 ::: simplesoilprofile.swap.params
+
+::: simplesoilprofile.swap.results
 
 ## Data sources
 

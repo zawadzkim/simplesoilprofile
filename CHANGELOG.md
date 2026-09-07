@@ -32,6 +32,8 @@ Nothing from the 0.0.9 API is kept under its old name.
 
 - `simplesoilprofile.swap.params`: `param(profile, key, attribute, bounds, transform=..., tie_ksat=True)` builds a `ParamSpec` addressing the SOILHYDRFUNC cell of a material by key — the row is resolved from the profile's present horizons (an absent lens raises instead of shifting the row), a material placed twice drives all its rows, `k_sat` ties KSATEXM to KSATFIT; `spec.as_dict()` feeds pyswap's `Param(**...)`; `apply_fit(library, values, specs, note=...)` writes fitted values back into a new library. This package does not import pyswap.
 
+- `simplesoilprofile.core.nodes`: `node_bounds`, `node_depths`, `node_horizons`, `interval_weights(profile, top, bottom)` (compartment-overlap weights that sum to one). `simplesoilprofile.swap.results`: `at_nodes(tz, profile, var)` pivots SWAP's per-node output (DEPTH in cm, negative down) to time x node depth [m] and checks the nodes against the profile; `interval_mean(values, profile, top, bottom)` averages it over a sample layer.
+
 ### Changed
 
 - **All lengths are metres**: horizon bottoms, depths, elevation. The SWAP exporters convert to cm; bulk density (g/cm³) is converted to SWAP's mg/cm³ there as well.
