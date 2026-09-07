@@ -85,6 +85,19 @@ soilprofile = soilprofile_table(profile)     # ISUBLAY / ISOILLAY / HSUBLAY / HC
 
 The frames carry pyswap's column names, so `pyswap.components.soilwater.SOILHYDRFUNC.create(soilhydrfunc.to_dict("list"))` consumes them directly; this package does not import pyswap.
 
+### Calibration parameters by material, not by row number
+
+```python
+from simplesoilprofile.swap import apply_fit, param
+
+k_sub = param(s05, "Subsoil", "k_sat", bounds=(0.1, 50), transform="log10", name="k_sub")
+# k_sub.path == "soilprofile.soilhydrfunc.KSATFIT[1]", k_sub.also ties KSATEXM[1] and every other row of "Subsoil"
+# pyswap side:  Param(**k_sub.as_dict())
+fitted = apply_fit(library, {"k_sub": 0.17}, [k_sub], note="calibration v4")   # back into a new library
+```
+
+The row is resolved from the horizons present in *that* profile, so a lens that is absent at one sounding raises instead of silently shifting the row.
+
 ### Profiles from DOV
 
 ```python

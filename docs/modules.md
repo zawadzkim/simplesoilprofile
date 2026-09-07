@@ -22,6 +22,8 @@
 
 ::: simplesoilprofile.swap.tables
 
+::: simplesoilprofile.swap.params
+
 ## Data sources
 
 ::: simplesoilprofile.sources.dov
