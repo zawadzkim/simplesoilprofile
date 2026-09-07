@@ -55,7 +55,7 @@ class SoilLayer(BaseModel):
     @model_validator(mode='after')
     def validate_water_contents(self) -> 'SoilLayer':
         """Validate that residual water content is less than saturated water content."""
-        if not self.theta_res or not self.theta_sat:
+        if self.theta_res is None or self.theta_sat is None:
             return self
 
         if self.theta_res >= self.theta_sat:
@@ -137,25 +137,74 @@ class SoilLayer(BaseModel):
 
         return compute_sublayer_boundaries(top, bottom, self.discretization)
 
-    def predict_van_genuchten(self, method: Literal["rosetta",]):
-        """Predict van Genuchten parameters from soil texture."""
-        if method == "rosetta":
-            input_data = [
-                [self.sand_content, self.silt_content, self.clay_content]
-            ]
-            soildata = SoilData.from_array(input_data)
+    def predict_van_genuchten(
+        self,
+        method: Literal["rosetta"] = "rosetta",
+        version: Literal[1, 2, 3] = 3,
+        use_bulk_density: bool = True,
+        keep_ksat: bool = False,
+    ) -> dict[str, float]:
+        """Predict van Genuchten parameters from soil texture with a pedotransfer function.
 
-            mean, _stdev, _codes = rosetta(2, soildata)
-            logger.debug("Raw Rosetta output (mean values): %s", mean)
+        Requires ``rosetta-soil >= 0.3``: ``rosetta()`` returns arithmetic means in linear
+        units (theta [cm3/cm3], alpha [1/cm], n [-], Ksat [cm/d]), so no back-transform is applied.
+        The predicted values are written to ``theta_res``, ``theta_sat``, ``alpha``, ``n``,
+        ``lambda_param`` and (unless ``keep_ksat``) ``k_sat``; each written parameter gets a
+        metadata entry naming the model.
 
-            # Convert from log10 values for alpha, n, and k_sat
-            self.theta_res = mean[0][0]  # Residual water content
-            self.theta_sat = mean[0][1]  # Saturated water content
-            self.alpha = 10 ** mean[0][2]  # Convert from log10(1/cm)
-            self.n = 10 ** mean[0][3]      # Convert from log10(-)
-            self.k_sat = 10 ** mean[0][4]  # Convert from log10(cm/day)
+        Args:
+            method: Pedotransfer function; only ``"rosetta"`` is implemented.
+            version: Rosetta version (1, 2 or 3).
+            use_bulk_density: Add ``bulk_density`` to the predictors when it is set
+                (Rosetta's SSC+BD hierarchy level), otherwise predict from texture alone.
+            keep_ksat: Leave ``k_sat`` untouched — for profiles whose saturated conductivity
+                comes from a measurement or another source. The Rosetta Ksat is still returned.
 
-            logger.info("Predicted van Genuchten parameters for layer '%s'")
+        Returns:
+            The full prediction: theta_res, theta_sat, alpha, n, k_sat, k0, lambda_param.
+
+        Raises:
+            ValueError: unknown method, or texture fractions missing.
+        """
+        if method != "rosetta":
+            raise ValueError(f"Unknown pedotransfer method: '{method}'. Available: 'rosetta'")
+        if any(v is None for v in (self.sand_content, self.silt_content, self.clay_content)):
+            raise ValueError(f"Layer '{self.name}': sand, silt and clay contents are required for Rosetta")
+
+        predictors = [self.sand_content, self.silt_content, self.clay_content]
+        if use_bulk_density and self.bulk_density is not None:
+            predictors.append(self.bulk_density)
+
+        mean, _stdev, codes = rosetta(version, SoilData.from_iter([predictors]))
+        logger.debug("Raw Rosetta output (mean values): %s", mean)
+        theta_res, theta_sat, alpha, n, k_sat, k0, lambda_param = (float(v) for v in mean[0])
+        predicted = {
+            "theta_res": theta_res,
+            "theta_sat": theta_sat,
+            "alpha": alpha,
+            "n": n,
+            "k_sat": k_sat,
+            "k0": k0,
+            "lambda_param": lambda_param,
+        }
+
+        source = M(source=f"Rosetta v{version} (input code {int(codes[0])})", source_type="modeled")
+        self.theta_res = theta_res
+        self.theta_sat = theta_sat
+        self.alpha = alpha
+        self.n = n
+        self.lambda_param = lambda_param
+        written = ["theta_res", "theta_sat", "alpha", "n", "lambda_param"]
+        if not keep_ksat:
+            self.k_sat = k_sat
+            written.append("k_sat")
+        if self.metadata is None:
+            self.metadata = {}
+        for key in written:
+            self.metadata[key] = source
+
+        logger.info("Predicted van Genuchten parameters for layer '%s' with Rosetta v%d", self.name, version)
+        return predicted
 
     def infer_fractions_from_texture(
             self,

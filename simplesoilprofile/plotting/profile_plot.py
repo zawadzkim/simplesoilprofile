@@ -104,6 +104,8 @@ def plot_profile(
 
     # Plot each layer
     for layer_idx, (top, bottom) in sorted_depths:
+        if bottom <= top:
+            continue  # absent layer at this location: nothing to draw
         layer = profile.layers[layer_idx]
 
         # Get color based on texture class or use default

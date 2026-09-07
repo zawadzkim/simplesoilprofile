@@ -99,7 +99,7 @@ def test_profile_layer_continuity():
     )
 
     # Test invalid layer depths (non-increasing)
-    with pytest.raises(ValueError, match="bottom depth must be greater than previous layer"):
+    with pytest.raises(ValueError, match="must not be less than the previous layer"):
         SoilProfile(
             name="Invalid Profile",
             layers=[layer, layer],

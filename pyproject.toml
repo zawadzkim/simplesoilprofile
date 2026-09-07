@@ -14,9 +14,8 @@ dependencies = [
     "pyyaml>=6.0.1",
     "requests>=2.31.0",
     "pandas>=2.3.3",
-    "rosetta-soil>=0.1.2",
-    "pydov>=3.3.1",
-    "dovwms>=0.0.3",
+    "rosetta-soil>=0.3",
+    "shapely>=2.0",
 ]
 requires-python = ">=3.11"
 authors = [
@@ -42,6 +41,10 @@ classifiers = [
 "Documentation" = "https://zawadzkim.github.io/simplesoilprofile/"
 
 [project.optional-dependencies]
+dov = [
+    "pydov>=3.3.1",
+    "dovwms>=0.0.3",
+]
 docs = [
     "mkdocs-material>=9.7.0",
     "mkdocs-jupyter==0.24.8",
@@ -164,7 +167,7 @@ nbstripout = "*"
 ruff = "*"
 
 [tool.pixi.feature.docs.pypi-dependencies]
-simplesoilprofile = { path = ".", editable = true }
+simplesoilprofile = { path = ".", editable = true, extras = ["dov"] }
 mkdocs-material = ">=9.7.0"
 mkdocs-jupyter = "==0.24.8"
 mkdocs-include-markdown-plugin = ">=6.2.0"
@@ -174,6 +177,7 @@ mkdocs-awesome-pages-plugin = ">=2.10.1"
 mkdocs-exclude-search = ">=0.6.6"
 
 [tool.pixi.feature.notebook.pypi-dependencies]
+simplesoilprofile = { path = ".", editable = true, extras = ["dov"] }
 jupyter = "*"
 ipywidgets = "*"
 

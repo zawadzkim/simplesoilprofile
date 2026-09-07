@@ -20,6 +20,7 @@ def test_profile_to_soilhydfunc_table():
         n=1.5,
         k_sat=10.0,
         lambda_param=0.5,
+        bulk_density=1.4,
     )
 
     layer2 = SoilLayer(
@@ -30,6 +31,7 @@ def test_profile_to_soilhydfunc_table():
         n=1.3,
         k_sat=5.0,
         lambda_param=0.5,
+        bulk_density=1.5,
     )
 
     profile = SoilProfile(
@@ -45,8 +47,8 @@ def test_profile_to_soilhydfunc_table():
     assert isinstance(table, pd.DataFrame)
     assert len(table) == 2  # Two layers
 
-    # Check expected columns exist (only non-null ones should remain)
-    expected_cols = ["ORES", "OSAT", "ALFA", "NPAR", "LEXP", "KSATFIT"]
+    # Every column SWAP requires is present; H_ENPR and KSATEXM take their defaults
+    expected_cols = ["ORES", "OSAT", "ALFA", "NPAR", "LEXP", "KSATFIT", "H_ENPR", "KSATEXM", "BDENS"]
     for col in expected_cols:
         assert col in table.columns
 

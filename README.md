@@ -55,29 +55,45 @@ subsoil = SoilLayer(
     sand_content=35.0,
 )
 
-# Create a profile
+# Create a profile (layer bottoms in cm below the surface; the first layer starts at 0)
+from shapely.geometry import Point
+
 profile = SoilProfile(
     name="Test Profile",
     layers=[topsoil, subsoil],
-    layer_depths={
-        0: (0, 30),    # Topsoil from 0-30 cm
-        1: (30, 100),  # Subsoil from 30-100 cm
-    },
-    x=100.0,
-    y=200.0,
-    z=5.0,
+    layer_bottoms=[30, 100],
+    location=Point(100.0, 200.0),
+    elevation=5.0,
 )
+```
+
+A layer whose bottom equals the previous bottom has zero thickness: it is absent at that
+location but keeps its index, so one layer sequence can describe every profile of a site.
+
+### Predicting hydraulic parameters
+
+```python
+sandy = SoilLayer(name="Sand", sand_content=82, silt_content=13, clay_content=5)
+sandy.predict_van_genuchten(version=2)          # Rosetta 2 on texture; needs rosetta-soil >= 0.3
+sandy.predict_van_genuchten(keep_ksat=True)     # keep a measured k_sat, predict the rest
 ```
 
 ### Generating SWAP Input
 
 ```python
-from simplesoilprofile.models.swap import write_swap_soil_file
+from simplesoilprofile.models.discretization import DiscretizationType, LayerDiscretization
+from simplesoilprofile.models.swap import profile_to_soilhydfunc_table, profile_to_sublayer_table
 
-# Write to a SWAP soil file
-with open("soil.swp", "w") as f:
-    write_swap_soil_file(profile, f)
+for layer in profile.layers:
+    layer.bulk_density = 1.5  # SWAP requires BDENS for every layer
+    layer.discretization = LayerDiscretization(type=DiscretizationType.EVEN, num_sublayers=2, num_compartments=5)
+
+soilhydrfunc = profile_to_soilhydfunc_table(profile)  # one row per present layer
+soilprofile = profile_to_sublayer_table(profile)      # ISUBLAY / ISOILLAY / HSUBLAY / NCOMP / HCOMP
 ```
+
+The Flemish soil database (DOV) helper `get_profile_from_dov` needs the optional extra:
+`pip install "simplesoilprofile[dov]"`.
 
 ### Visualizing a Profile
 
@@ -89,6 +105,6 @@ from simplesoilprofile.plotting import plot_profile
 fig, ax = plt.subplots(figsize=(8, 12))
 
 # Plot the profile
-plot_profile(profile, ax=ax, show_properties=True)
+plot_profile(profile, ax=ax, show_layer_properties=True)
 plt.show()
 ```
