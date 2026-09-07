@@ -116,13 +116,16 @@ profile = profile_from_dov(247172.56, 204590.58, fetch_elevation=True)
 profile = profile.with_material(0, profile.horizons[0].material.with_rosetta(version=2))
 ```
 
-### Visualizing a Profile
+### Visualizing profiles
 
 ```python
 import matplotlib.pyplot as plt
-from simplesoilprofile import plot_profile
+from simplesoilprofile.plotting import mark_interval, plot_fence, plot_profile, plot_profiles
 
-fig, ax = plt.subplots(figsize=(8, 12))
-plot_profile(profile, ax=ax, show_layer_properties=True)
+colors = {"Topsoil": "#748a33", "Subsoil": "#e09600"}        # keyed by horizon key / material name
+ax = plot_profile(s05, colors=colors, show_sublayers=True)   # one column, properties beside it
+mark_interval(ax, s05, 3.5, 4.0, "PB15A")                    # a well screen
+plot_profiles([s05, s06], colors=colors, datum="elevation")  # side by side in one datum
+plot_fence([s02, s05, s06], colors=colors)                   # a fence; absent horizons are annotated
 plt.show()
 ```
