@@ -31,7 +31,7 @@ Objects are immutable: every `with_*` method returns a new, validated object.
 ### Materials and a profile
 
 ```python
-from simplesoilprofile import CountRule, DiscretizationType, Horizon, SoilMaterial, SoilProfile
+from simplesoilprofile import CompartmentRule, CountRule, DiscretizationType, Horizon, SoilMaterial, SoilProfile
 
 topsoil = SoilMaterial(name="Topsoil", texture_class="sandy loam", sand_content=65, silt_content=25, clay_content=10,
                        bulk_density=1.45)
@@ -43,7 +43,8 @@ topsoil = topsoil.with_rosetta(version=3)            # texture + bulk density as
 subsoil = subsoil.with_rosetta(version=2)            # texture only
 measured = topsoil.with_(source="lab", source_type="measured", k_sat=42.0)   # provenance travels with the value
 
-rule = CountRule(type=DiscretizationType.EVEN, num_sublayers=2, num_compartments=5)
+rule = CompartmentRule(hcomp=0.05, top_cap=(0.10, 0.01))   # 5 cm compartments, the top 10 cm at 1 cm
+# or by counts: CountRule(type=DiscretizationType.EVEN, num_sublayers=2, num_compartments=5)
 profile = SoilProfile(
     name="Test Profile",
     x=247172.56, y=204590.58, crs="EPSG:31370", elevation=33.2,   # elevation in m above the site datum

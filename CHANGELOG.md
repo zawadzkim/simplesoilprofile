@@ -28,6 +28,8 @@ Nothing from the 0.0.9 API is kept under its old name.
 - `SoilLibrary` (`simplesoilprofile.core.library`): named materials defined once, with library-level provenance; `to_frame()`, `with_values({(key, attribute): value}, note=...)` for fitted values (provenance entries marked 'modeled'), `with_material()`, JSON round trip.
 - `SoilProfile.from_library(library, [(key, bottom_m), ...], rules={key: rule})` and `SoilProfile.rebuild(library)`: profiles are derived from a library and re-derived after a fit; every horizon records its library `key`.
 
+- `CompartmentRule(hcomp, top_cap=(thickness, hcomp))` (`simplesoilprofile.core.discretization`): discretization by compartment height in metres with an optional finer cap at the horizon top; `sublayers(profile)` resolves every present horizon into `Sublayer` rows, checks that thicknesses are multiples of the compartment height, and enforces SWAP's 5000-compartment limit (`MACP`). `CountRule` keeps the count-based schemes.
+
 ### Changed
 
 - **All lengths are metres**: horizon bottoms, depths, elevation. The SWAP exporters convert to cm; bulk density (g/cm³) is converted to SWAP's mg/cm³ there as well.

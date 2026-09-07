@@ -1,12 +1,31 @@
-"""Count-based discretization rules (even or logarithmic spacing of sublayers).
+"""Discretization of horizons into SWAP sublayers and compartments.
 
-Depth-unit agnostic: the boundaries are computed from the horizon's top and bottom in whatever unit those carry (metres in this package).
+Two kinds of rule, both attached to a :class:`~simplesoilprofile.core.horizon.Horizon`:
+
+- :class:`CompartmentRule` — a target compartment height in metres, optionally with a finer cap at the top of the horizon (``top_cap=(thickness, hcomp)``). Every sublayer thickness must be a multiple of its compartment height.
+- :class:`CountRule` — the count-based schemes (even or logarithmic spacing of a number of sublayers, each with a number of compartments).
+
+:func:`sublayers` resolves a whole profile into :class:`Sublayer` rows and enforces SWAP's limits (``MACP`` = 5000 compartments in SWAP 4.2.0).
+All lengths in metres.
 """
 
+from __future__ import annotations
+
+from dataclasses import dataclass
 from enum import Enum
+from itertools import pairwise
+from typing import TYPE_CHECKING
 
 import numpy as np
 from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
+
+if TYPE_CHECKING:
+    from simplesoilprofile.core.profile import SoilProfile
+
+#: Maximum number of compartments in SWAP 4.2.0 (``MACP`` in ``arrays.fi``).
+MACP = 5000
+#: Tolerance [m] on "sublayer thickness is a multiple of the compartment height".
+LENGTH_TOL = 1e-9
 
 
 class DiscretizationType(str, Enum):
@@ -43,7 +62,7 @@ class CountRule(BaseModel):
     )
 
     @model_validator(mode='after')
-    def validate_discretization(self) -> 'CountRule':
+    def validate_discretization(self) -> CountRule:
         """Validate discretization parameters."""
         if self.type != DiscretizationType.EVEN and self.log_density <= 0:
             raise ValueError("log_density must be positive for logarithmic discretization")
@@ -129,3 +148,100 @@ def compute_sublayer_boundaries(
 
         # Combine boundaries, avoiding duplicate middle point
         return list(np.concatenate([top_boundaries[:-1], bottom_boundaries]))
+
+
+class CompartmentRule(BaseModel):
+    """Discretization by compartment height [m], with an optional finer cap at the horizon top."""
+
+    model_config = ConfigDict(frozen=True)
+
+    hcomp: float = Field(..., description="Compartment height [m]", gt=0.0)
+    top_cap: tuple[float, float] | None = Field(
+        None, description="(thickness [m], compartment height [m]) of a finer sublayer at the top of the horizon"
+    )
+
+    @model_validator(mode="after")
+    def _cap_is_positive(self) -> CompartmentRule:
+        if self.top_cap is not None and (self.top_cap[0] <= 0.0 or self.top_cap[1] <= 0.0):
+            raise ValueError("top_cap thickness and compartment height must be positive")
+        return self
+
+
+Rule = CompartmentRule | CountRule
+
+
+@dataclass(frozen=True)
+class Sublayer:
+    """One SWAP sublayer: a run of equal compartments inside a horizon (lengths in metres)."""
+
+    isoillay: int
+    """1-based index among the *present* horizons — the SWAP soil layer number."""
+    horizon: int
+    """0-based index of the horizon in the profile."""
+    top: float
+    bottom: float
+    hcomp: float
+    ncomp: int
+
+    @property
+    def thickness(self) -> float:
+        return self.bottom - self.top
+
+
+def _ncomp(thickness: float, hcomp: float, where: str) -> int:
+    n = thickness / hcomp
+    ncomp = round(n)
+    if ncomp < 1 or abs(n - ncomp) * hcomp > LENGTH_TOL:
+        remainder = thickness - int(n) * hcomp
+        raise ValueError(
+            f"{where}: sublayer thickness {thickness:.6g} m is not a multiple of the compartment height {hcomp:.6g} m "
+            f"(remainder {remainder:.6g} m)"
+        )
+    return ncomp
+
+
+def _resolve(rule: Rule, top: float, bottom: float, where: str) -> list[tuple[float, float, float, int]]:
+    """(top, bottom, hcomp, ncomp) of every sublayer of one horizon."""
+    thickness = bottom - top
+    if isinstance(rule, CountRule):
+        bounds = rule.boundaries(top, bottom)
+        return [
+            (t, b, (b - t) / rule.num_compartments, rule.num_compartments)
+            for t, b in pairwise(bounds)
+        ]
+    out = []
+    start = top
+    if rule.top_cap is not None:
+        cap_thickness, cap_hcomp = rule.top_cap
+        if cap_thickness >= thickness - LENGTH_TOL:
+            raise ValueError(f"{where}: top cap {cap_thickness:.6g} m is not thinner than the horizon ({thickness:.6g} m)")
+        out.append((start, start + cap_thickness, cap_hcomp, _ncomp(cap_thickness, cap_hcomp, where + " (top cap)")))
+        start += cap_thickness
+    out.append((start, bottom, rule.hcomp, _ncomp(bottom - start, rule.hcomp, where)))
+    return out
+
+
+def sublayers(profile: SoilProfile, strict: bool = True) -> list[Sublayer]:
+    """Resolve the present horizons of ``profile`` into SWAP sublayers, top down.
+
+    Args:
+        profile: The profile; every present horizon needs a rule.
+        strict: Raise on a present horizon without a rule (the SWAP export needs a complete column); with ``strict=False`` such horizons are skipped (plotting).
+
+    Raises:
+        ValueError: missing rule, a sublayer thickness that is not a multiple of its compartment height, a top cap thicker than its horizon, or more than ``MACP`` compartments in total.
+    """
+    out: list[Sublayer] = []
+    for isoillay, (i, h) in enumerate(profile.present, start=1):
+        where = f"Horizon {i} '{h.material.name}'"
+        if h.rule is None:
+            if strict:
+                raise ValueError(f"{where} has no discretization rule; set `rule` before exporting")
+            continue
+        top, bottom = profile.bounds[i]
+        for t, b, hcomp, ncomp in _resolve(h.rule, top, bottom, where):
+            out.append(Sublayer(isoillay, i, t, b, hcomp, ncomp))
+    total = sum(s.ncomp for s in out)
+    if total > MACP:
+        raise ValueError(f"Profile '{profile.name}': {total} compartments exceed SWAP's limit of {MACP}")
+    return out
