@@ -7,6 +7,7 @@ from simplesoilprofile.report.tables import (
     latex_rows,
     library_frame,
     markdown_table,
+    sig,
 )
 
-__all__ = ["LIBRARY_COLUMNS", "Column", "horizon_frame", "latex_rows", "library_frame", "markdown_table"]
+__all__ = ["LIBRARY_COLUMNS", "Column", "horizon_frame", "latex_rows", "library_frame", "markdown_table", "sig"]

@@ -6,7 +6,8 @@ Captions, labels, column headers and macros belong to the hand-written wrapper i
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping, Sequence
+import math
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
@@ -17,15 +18,29 @@ from simplesoilprofile.core.discretization import sublayers
 from simplesoilprofile.core.library import SoilLibrary
 from simplesoilprofile.core.profile import SoilProfile
 
+Format = str | Callable[[float], str]
+
+
+def sig(digits: int = 3) -> Callable[[float], str]:
+    """A formatter with ``digits`` significant figures and no exponent (1440.49 -> '1440', 0.1703 -> '0.170', 37.3 -> '37.3')."""
+
+    def _format(value: float) -> str:
+        if value == 0:
+            return "0"
+        decimals = max(digits - 1 - math.floor(math.log10(abs(value))), 0)
+        return f"{value:.{decimals}f}"
+
+    return _format
+
 
 @dataclass(frozen=True)
 class Column:
-    """One publication column: the material attribute, its symbol/unit for the reader, and a format."""
+    """One publication column: the material attribute, its symbol/unit for the reader, and a format (``str.format`` pattern or callable)."""
 
     attribute: str
     label: str
     unit: str
-    fmt: str = "{:.3f}"
+    fmt: Format = "{:.3f}"
 
 
 #: Default publication columns of a library table, in order.
@@ -39,7 +54,7 @@ LIBRARY_COLUMNS: tuple[Column, ...] = (
     Column("alpha", "alpha", "cm-1", "{:.4f}"),
     Column("n", "n", "-", "{:.3f}"),
     Column("l_mualem", "L", "-", "{:.2f}"),
-    Column("k_sat", "K_s", "cm d-1", "{:.3g}"),
+    Column("k_sat", "K_s", "cm d-1", sig(3)),
 )
 
 #: Formats of :func:`horizon_frame`.
@@ -90,11 +105,13 @@ def horizon_frame(profile: SoilProfile, include_absent: bool = False) -> pd.Data
     return frame
 
 
-def _fmt(value, fmt: str | None, na: str) -> str:
+def _fmt(value, fmt: Format | None, na: str) -> str:
     if value is None or (isinstance(value, float) and pd.isna(value)):
         return na
     if fmt is None or isinstance(value, str):
         return str(value)
+    if callable(fmt):
+        return fmt(value)
     if fmt.endswith("d}"):
         return fmt.format(int(value))
     return fmt.format(value)
@@ -108,7 +125,7 @@ def latex_rows(
     frame: pd.DataFrame,
     path: str | Path | None = None,
     *,
-    formats: Mapping[str, str] | None = None,
+    formats: Mapping[str, Format] | None = None,
     provenance: Iterable[str] | str | None = None,
     index: bool = True,
     na: str = "--",
@@ -141,7 +158,7 @@ def latex_rows(
 def markdown_table(
     frame: pd.DataFrame,
     *,
-    formats: Mapping[str, str] | None = None,
+    formats: Mapping[str, Format] | None = None,
     units: bool = True,
     index: bool = True,
     na: str = "--",

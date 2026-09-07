@@ -267,7 +267,8 @@ def mark_interval(
     rect = Rectangle((x, min(y0, y1)), width, abs(y1 - y0), facecolor=facecolor, edgecolor=edgecolor, linewidth=1.0, zorder=5)
     ax.add_patch(rect)
     if label:
-        ax.annotate(label, (x + width, (y0 + y1) / 2), xytext=(3, 0), textcoords="offset points", va="center", fontsize=7.5, zorder=6)
+        ax.annotate(label, (x + width, (y0 + y1) / 2), xytext=(3, 0), textcoords="offset points", va="center", fontsize=7.5, zorder=6,
+                    bbox={"boxstyle": "round,pad=0.15", "facecolor": "white", "edgecolor": "none", "alpha": 0.85})
     return rect
 
 
@@ -287,4 +288,5 @@ def mark_depth(
     y = _y(profile, depth, datum)
     ax.plot([x0, x1], [y, y], color=color, linestyle=linestyle, linewidth=0.9, zorder=4)
     if label:
-        ax.annotate(label, (x1, y), xytext=(3, 0), textcoords="offset points", va="center", fontsize=7.5, color=color, zorder=6)
+        ax.annotate(label, (x0, y), xytext=(3, 2), textcoords="offset points", va="bottom", ha="left", fontsize=7.5, color=color, zorder=6,
+                    bbox={"boxstyle": "round,pad=0.1", "facecolor": "white", "edgecolor": "none", "alpha": 0.85})

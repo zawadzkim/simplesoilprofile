@@ -3,7 +3,15 @@
 import re
 
 from simplesoilprofile import CompartmentRule, Horizon, SoilLibrary, SoilProfile
-from simplesoilprofile.report import LIBRARY_COLUMNS, Column, horizon_frame, latex_rows, library_frame, markdown_table
+from simplesoilprofile.report import (
+    LIBRARY_COLUMNS,
+    Column,
+    horizon_frame,
+    latex_rows,
+    library_frame,
+    markdown_table,
+    sig,
+)
 from tests.conftest import material
 
 LIB = SoilLibrary(name="s", materials={m.name: m for m in (material("L1 topsoil", k_sat=104.0), material("L3 leaky", k_sat=0.17, l_mualem=-1.2831))})
@@ -19,6 +27,11 @@ def test_library_frame_columns_and_attrs():
     assert f.index.name == "material" and f.index.tolist() == ["L1 topsoil", "L3 leaky"]
     assert f.columns.tolist() == [c.label for c in LIBRARY_COLUMNS]
     assert f.attrs["units"]["K_s"] == "cm d-1" and f.attrs["formats"]["alpha"] == "{:.4f}"
+
+
+def test_sig_formatter_has_no_exponent():
+    f = sig(3)
+    assert [f(v) for v in (1440.4854, 104.0, 37.3, 4.2252, 2.0992, 0.1703, 0.0, 2300.0)] == ["1440", "104", "37.3", "4.23", "2.10", "0.170", "0", "2300"]
     small = library_frame(LIB, [Column("k_sat", "Ks", "cm/d", "{:.2f}"), Column("n", "n", "-")])
     assert small.columns.tolist() == ["Ks", "n"] and small.loc["L3 leaky", "Ks"] == 0.17
 
