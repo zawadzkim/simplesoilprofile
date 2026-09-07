@@ -98,6 +98,15 @@ fitted = apply_fit(library, {"k_sub": 0.17}, [k_sub], note="calibration v4")   #
 
 The row is resolved from the horizons present in *that* profile, so a lens that is absent at one sounding raises instead of silently shifting the row.
 
+### Reading SWAP output back onto the profile
+
+```python
+from simplesoilprofile.swap import at_nodes, interval_mean
+
+theta = at_nodes(result.csv_tz, s05, var="WC")        # time x node depth [m]; raises if the nodes do not match
+theta_0_30 = interval_mean(theta, s05, 0.0, 0.3)      # the 0-30 cm sample layer, weighted by compartment overlap
+```
+
 ### Profiles from DOV
 
 ```python
