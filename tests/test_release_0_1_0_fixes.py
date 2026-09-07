@@ -167,3 +167,47 @@ def test_profile_needs_positive_depth():
 def test_version_comes_from_package_metadata():
     assert simplesoilprofile.__version__ != "0.0.1"
     assert isinstance(pd.__version__, str)  # pandas is a declared runtime dependency
+
+
+# --- DOV -> Rosetta chain -------------------------------------------------------------
+
+
+def test_dov_profile_feeds_rosetta(monkeypatch):
+    """The DOV texture layers (dovwms dict shape) build a profile whose layers Rosetta can parameterize."""
+    import sys
+    import types
+
+    from shapely.geometry import Point
+
+    from simplesoilprofile.models.profile import get_profile_from_dov
+
+    def fake_dov(x, y, fetch_elevation=False, crs="EPSG:31370"):
+        layers = []
+        for name, top, bottom, sand, silt, clay in [
+            ("Layer_0-30cm", 0, 30, 72.0, 22.0, 6.0),
+            ("Layer_30-60cm", 30, 60, 70.0, 23.0, 7.0),
+            ("Layer_60-100cm", 60, 100, 75.0, 19.0, 6.0),
+            ("Layer_100-150cm", 100, 150, 80.0, 15.0, 5.0),
+        ]:
+            layers.append({
+                "name": name, "layer_top": top, "layer_bottom": bottom,
+                "sand_content": sand, "silt_content": silt, "clay_content": clay,
+                "metadata": {k: {"source": "DOV WMS", "uncertainty": 5.0}
+                             for k in ("sand_content", "silt_content", "clay_content")},
+            })
+        out = {"layers": layers}
+        if fetch_elevation:
+            out["elevation"] = {"elevation": 33.2}
+        return out
+
+    monkeypatch.setitem(sys.modules, "dovwms", types.SimpleNamespace(get_profile_from_dov=fake_dov))
+
+    profile = get_profile_from_dov(Point(247172.56, 204590.58), fetch_elevation=True)
+    assert profile.elevation == 33.2
+    assert profile.layer_bottoms == [30, 60, 100, 150]
+    assert profile.layers[0].metadata["sand_content"].source == "DOV WMS"
+
+    for layer in profile.layers:
+        layer.predict_van_genuchten(version=2)
+    assert all(1.1 < layer.n < 2.5 for layer in profile.layers)
+    assert profile.layers[0].metadata["n"].source_type == "modeled"
