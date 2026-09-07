@@ -28,6 +28,10 @@
 
 ::: simplesoilprofile.swap.results
 
+## Publication tables
+
+::: simplesoilprofile.report.tables
+
 ## Data sources
 
 ::: simplesoilprofile.sources.dov

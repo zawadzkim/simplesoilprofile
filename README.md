@@ -85,6 +85,17 @@ soilprofile = soilprofile_table(profile)     # ISUBLAY / ISOILLAY / HSUBLAY / HC
 
 The frames carry pyswap's column names, so `pyswap.components.soilwater.SOILHYDRFUNC.create(soilhydrfunc.to_dict("list"))` consumes them directly; this package does not import pyswap.
 
+### Publication tables from the same objects
+
+```python
+from simplesoilprofile.report import horizon_frame, latex_rows, library_frame, markdown_table
+
+rows = library_frame(fitted)                                   # symbols, units, formats per column
+latex_rows(rows, "paper/generated/soil_library_rows.tex",      # data rows only + provenance comment;
+           provenance=["notebook 04-...", "commit abc123"])    # caption/header/label stay in the paper's wrapper
+print(markdown_table(horizon_frame(s05)))                      # for a synthesis document
+```
+
 ### Calibration parameters by material, not by row number
 
 ```python
