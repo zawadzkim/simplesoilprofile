@@ -36,6 +36,8 @@ Nothing from the 0.0.9 API is kept under its old name.
 
 - Plotting (`simplesoilprofile.plotting`): `plot_profile(profile, datum="depth"|"elevation", colors=, hatches=, show_nodes=)`, `plot_profiles([...])` side by side, `plot_fence([...])` in one elevation datum with absent horizons annotated, `draw_column`, `legend_entries`, and the overlays `mark_interval` (screens, sample layers) and `mark_depth` (pipes, sounding reach). Colours and hatches are keyed by horizon key or material name.
 
+- `simplesoilprofile.report`: publication tables. `library_frame(library, columns)` (symbols, units and formats per column; `LIBRARY_COLUMNS` default), `horizon_frame(profile)` (materials, depths, compartment heights and counts), `latex_rows(frame, path, provenance=[...])` — data rows only with a provenance comment header, the paper's wrapper keeps caption, header and label — and `markdown_table(frame)` for synthesis documents.
+
 ### Changed
 
 - **All lengths are metres**: horizon bottoms, depths, elevation. The SWAP exporters convert to cm; bulk density (g/cm³) is converted to SWAP's mg/cm³ there as well.
