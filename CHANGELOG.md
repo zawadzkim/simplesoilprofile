@@ -30,6 +30,8 @@ Nothing from the 0.0.9 API is kept under its old name.
 
 - `CompartmentRule(hcomp, top_cap=(thickness, hcomp))` (`simplesoilprofile.core.discretization`): discretization by compartment height in metres with an optional finer cap at the horizon top; `sublayers(profile)` resolves every present horizon into `Sublayer` rows, checks that thicknesses are multiples of the compartment height, and enforces SWAP's 5000-compartment limit (`MACP`). `CountRule` keeps the count-based schemes.
 
+- `simplesoilprofile.swap.params`: `param(profile, key, attribute, bounds, transform=..., tie_ksat=True)` builds a `ParamSpec` addressing the SOILHYDRFUNC cell of a material by key — the row is resolved from the profile's present horizons (an absent lens raises instead of shifting the row), a material placed twice drives all its rows, `k_sat` ties KSATEXM to KSATFIT; `spec.as_dict()` feeds pyswap's `Param(**...)`; `apply_fit(library, values, specs, note=...)` writes fitted values back into a new library. This package does not import pyswap.
+
 ### Changed
 
 - **All lengths are metres**: horizon bottoms, depths, elevation. The SWAP exporters convert to cm; bulk density (g/cm³) is converted to SWAP's mg/cm³ there as well.
