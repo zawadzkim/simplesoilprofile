@@ -73,4 +73,4 @@ def test_horizon_frame_and_markdown():
 def test_markdown_library():
     md = markdown_table(library_frame(LIB))
     assert md.startswith("| material | sand (%) | silt (%) | clay (%) | rho_b (g cm-3) |")
-    assert "| L3 leaky | 92 | 5 | 3 | 1.50 | 0.040 | 0.380 | 0.0500 | 1.480 | -1.28 | 0.17 |" in md
+    assert "| L3 leaky | 92 | 5 | 3 | 1.50 | 0.040 | 0.380 | 0.0500 | 1.480 | -1.28 | 0.170 |" in md
