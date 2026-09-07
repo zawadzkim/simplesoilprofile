@@ -89,6 +89,7 @@ def test_soilhydfunc_fills_swap_defaults():
     assert table.loc[0, "H_ENPR"] == 0.0
     assert table.loc[0, "KSATEXM"] == table.loc[0, "KSATFIT"]
     assert table.loc[0, "LEXP"] == 0.5
+    assert table.loc[0, "BDENS"] == 1500.0  # g/cm3 on the layer, mg/cm3 in SWAP
 
 
 def test_soilhydfunc_keeps_explicit_h_enpr_and_ksatexm():

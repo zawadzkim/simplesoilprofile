@@ -21,6 +21,8 @@ _REQUIRED_HYD = {
 }
 #: Default air-entry head: the classical Mualem-van Genuchten form (no Ippisch modification).
 DEFAULT_H_ENPR = 0.0
+#: SoilLayer.bulk_density is in g/cm3 (the Rosetta convention); SWAP's BDENS is in mg/cm3.
+BDENS_PER_G_CM3 = 1000.0
 
 
 def profile_to_soilhydfunc_table(
@@ -30,7 +32,8 @@ def profile_to_soilhydfunc_table(
 
     SWAP requires every column of the table for every layer. ``H_ENPR`` defaults to
     ``0`` and ``KSATEXM`` to ``KSATFIT`` when the layer does not set them; the other
-    parameters must be present on every layer. ``ALFAW`` (hysteresis only) is emitted
+    parameters must be present on every layer. ``BDENS`` is converted from the layer's
+    g/cm3 to SWAP's mg/cm3. ``ALFAW`` (hysteresis only) is emitted
     when every present layer sets it and omitted when none does.
 
     Args:
@@ -59,7 +62,7 @@ def profile_to_soilhydfunc_table(
             "KSATFIT": layer.k_sat,
             "H_ENPR": DEFAULT_H_ENPR if layer.h_enpr is None else layer.h_enpr,
             "KSATEXM": layer.k_sat if layer.ksatexm is None else layer.ksatexm,
-            "BDENS": layer.bulk_density,
+            "BDENS": layer.bulk_density * BDENS_PER_G_CM3,
             "ALFAW": layer.alphaw,
         })
 
