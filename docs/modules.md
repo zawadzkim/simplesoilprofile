@@ -8,6 +8,8 @@
 
 ::: simplesoilprofile.core.profile
 
+::: simplesoilprofile.core.library
+
 ::: simplesoilprofile.core.discretization
 
 ## Pedotransfer and texture classes

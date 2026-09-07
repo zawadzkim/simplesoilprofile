@@ -2,7 +2,8 @@
 
 from simplesoilprofile.core.discretization import CountRule, DiscretizationType
 from simplesoilprofile.core.horizon import Horizon
+from simplesoilprofile.core.library import SoilLibrary
 from simplesoilprofile.core.material import ProvenanceEntry, SoilMaterial, SourceType
 from simplesoilprofile.core.profile import SoilProfile
 
-__all__ = ["CountRule", "DiscretizationType", "Horizon", "ProvenanceEntry", "SoilMaterial", "SoilProfile", "SourceType"]
+__all__ = ["CountRule", "DiscretizationType", "Horizon", "ProvenanceEntry", "SoilLibrary", "SoilMaterial", "SoilProfile", "SourceType"]
