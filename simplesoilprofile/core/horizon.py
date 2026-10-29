@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from simplesoilprofile.core.discretization import CompartmentRule, CountRule
+from simplesoilprofile.core.discretization import CompartmentRule, CountRule, SublayerRule
 from simplesoilprofile.core.material import SoilMaterial
 
 
@@ -19,5 +19,7 @@ class Horizon(BaseModel):
 
     material: SoilMaterial
     bottom: float = Field(..., description="Bottom depth [m below surface]", ge=0.0)
-    rule: CompartmentRule | CountRule | None = Field(None, description="Discretization rule for this horizon")
+    rule: CompartmentRule | CountRule | SublayerRule | None = Field(
+        None, description="Discretization rule for this horizon"
+    )
     key: str | None = Field(None, description="Library key the material was taken from, if any")

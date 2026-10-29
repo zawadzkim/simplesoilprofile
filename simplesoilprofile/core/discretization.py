@@ -1,9 +1,10 @@
 """Discretization of horizons into SWAP sublayers and compartments.
 
-Two kinds of rule, both attached to a :class:`~simplesoilprofile.core.horizon.Horizon`:
+Three kinds of rule, each attached to a :class:`~simplesoilprofile.core.horizon.Horizon`:
 
 - :class:`CompartmentRule` — a target compartment height in metres, optionally with a finer cap at the top of the horizon (``top_cap=(thickness, hcomp)``). Every sublayer thickness must be a multiple of its compartment height.
 - :class:`CountRule` — the count-based schemes (even or logarithmic spacing of a number of sublayers, each with a number of compartments).
+- :class:`SublayerRule` — an explicit list of sublayers, (thickness, compartments) each, as a SWAP soil database gives them.
 
 :func:`sublayers` resolves a whole profile into :class:`Sublayer` rows and enforces SWAP's limits (``MACP`` = 5000 compartments in SWAP 4.2.0).
 All lengths in metres.
@@ -167,7 +168,27 @@ class CompartmentRule(BaseModel):
         return self
 
 
-Rule = CompartmentRule | CountRule
+class SublayerRule(BaseModel):
+    """An explicit list of sublayers, top down: (thickness [m], compartments) each, as a SWAP soil database gives them.
+
+    The thicknesses add up to the horizon's.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    sublayers: tuple[tuple[float, int], ...] = Field(
+        ..., min_length=1, description="(thickness [m], compartments) of each sublayer, top down"
+    )
+
+    @model_validator(mode="after")
+    def _sublayers_are_positive(self) -> SublayerRule:
+        for t, n in self.sublayers:
+            if t <= 0.0 or n < 1:
+                raise ValueError(f"sublayer ({t}, {n}): the thickness must be positive and the compartments at least 1")
+        return self
+
+
+Rule = CompartmentRule | CountRule | SublayerRule
 
 
 @dataclass(frozen=True)
@@ -203,6 +224,15 @@ def _ncomp(thickness: float, hcomp: float, where: str) -> int:
 def _resolve(rule: Rule, top: float, bottom: float, where: str) -> list[tuple[float, float, float, int]]:
     """(top, bottom, hcomp, ncomp) of every sublayer of one horizon."""
     thickness = bottom - top
+    if isinstance(rule, SublayerRule):
+        total = sum(t for t, _ in rule.sublayers)
+        if abs(total - thickness) > LENGTH_TOL:
+            raise ValueError(f"{where}: its sublayers add up to {total:.6g} m, the horizon is {thickness:.6g} m")
+        out, start = [], top
+        for t, n in rule.sublayers:
+            out.append((start, start + t, t / n, n))
+            start += t
+        return out
     if isinstance(rule, CountRule):
         bounds = rule.boundaries(top, bottom)
         return [

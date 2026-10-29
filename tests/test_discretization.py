@@ -5,7 +5,7 @@ import re
 import pytest
 from pydantic import ValidationError
 
-from simplesoilprofile import CompartmentRule, Horizon, SoilLibrary, SoilProfile, sublayers
+from simplesoilprofile import CompartmentRule, Horizon, SoilLibrary, SoilProfile, SublayerRule, sublayers
 from simplesoilprofile.core import MACP
 from simplesoilprofile.swap import soilprofile_table
 from tests.conftest import EVEN, material
@@ -101,3 +101,48 @@ def test_rules_round_trip_json(tmp_path):
     S06.to_json(path)
     back = SoilProfile.from_json(path)
     assert back == S06 and isinstance(back.horizons[0].rule, CompartmentRule) and back.horizons[0].rule.top_cap == (0.10, 0.01)
+
+
+def db_profile(*rules) -> SoilProfile:
+    bottoms, depth = [], 0.0
+    for r in rules:
+        depth += sum(t for t, _ in r.sublayers)
+        bottoms.append(depth)
+    return SoilProfile(
+        name="db",
+        horizons=[
+            Horizon(material=material(f"m{i}"), bottom=b, rule=r)
+            for i, (b, r) in enumerate(zip(bottoms, rules, strict=True))
+        ],
+    )
+
+
+def test_sublayer_rule_gives_its_sublayers():
+    p = db_profile(SublayerRule(sublayers=((0.01, 1), (0.04, 2), (0.05, 1))), SublayerRule(sublayers=((0.20, 4),)))
+    table = soilprofile_table(p)
+    assert list(zip(table["ISOILLAY"], table["HSUBLAY"], table["HCOMP"], table["NCOMP"], strict=True)) == [
+        (1, 1.0, 1.0, 1),
+        (1, 4.0, 2.0, 2),
+        (1, 5.0, 5.0, 1),
+        (2, 20.0, 5.0, 4),
+    ]
+
+
+def test_sublayer_rule_must_fill_its_horizon():
+    p = SoilProfile(
+        name="db", horizons=[Horizon(material=material(), bottom=0.10, rule=SublayerRule(sublayers=((0.05, 1),)))]
+    )
+    with pytest.raises(ValueError, match=r"add up to 0\.05 m, the horizon is 0\.1 m"):
+        sublayers(p)
+
+
+@pytest.mark.parametrize("bad", [((0.0, 1),), ((0.1, 0),), ()])
+def test_sublayer_rule_refuses_a_degenerate_sublayer(bad):
+    with pytest.raises(ValidationError):
+        SublayerRule(sublayers=bad)
+
+
+def test_sublayer_rule_survives_json():
+    p = db_profile(SublayerRule(sublayers=((0.01, 1), (0.04, 2))))
+    q = SoilProfile.from_json(p.to_json())
+    assert q.horizons[0].rule == p.horizons[0].rule

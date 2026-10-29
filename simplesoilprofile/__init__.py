@@ -11,10 +11,11 @@ from simplesoilprofile.core import (
     SoilLibrary,
     SoilMaterial,
     SoilProfile,
+    SublayerRule,
     sublayers,
 )
 from simplesoilprofile.plotting import plot_profile
-from simplesoilprofile.sources import profile_from_dov
+from simplesoilprofile.sources import profile_from_dov, profile_from_swap_database
 
 try:
     __version__ = version("simplesoilprofile")
@@ -30,7 +31,9 @@ __all__ = [
     "SoilLibrary",
     "SoilMaterial",
     "SoilProfile",
+    "SublayerRule",
     "plot_profile",
     "profile_from_dov",
+    "profile_from_swap_database",
     "sublayers",
 ]
