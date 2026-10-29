@@ -7,6 +7,7 @@ from simplesoilprofile.core.discretization import (
     DiscretizationType,
     Rule,
     Sublayer,
+    SublayerRule,
     sublayers,
 )
 from simplesoilprofile.core.horizon import Horizon
@@ -28,6 +29,7 @@ __all__ = [
     "SoilProfile",
     "SourceType",
     "Sublayer",
+    "SublayerRule",
     "interval_weights",
     "node_bounds",
     "node_depths",

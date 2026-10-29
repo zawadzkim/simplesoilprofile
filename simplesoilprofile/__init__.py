@@ -11,6 +11,7 @@ from simplesoilprofile.core import (
     SoilLibrary,
     SoilMaterial,
     SoilProfile,
+    SublayerRule,
     sublayers,
 )
 from simplesoilprofile.plotting import plot_profile
@@ -30,6 +31,7 @@ __all__ = [
     "SoilLibrary",
     "SoilMaterial",
     "SoilProfile",
+    "SublayerRule",
     "plot_profile",
     "profile_from_dov",
     "sublayers",
