@@ -27,6 +27,8 @@ Nothing from the 0.0.9 API is kept under its old name.
 
 - `SoilLibrary` (`simplesoilprofile.core.library`): named materials defined once, with library-level provenance; `to_frame()`, `with_values({(key, attribute): value}, note=...)` for fitted values (provenance entries marked 'modeled'), `with_material()`, JSON round trip.
 - `SoilProfile.from_library(library, [(key, bottom_m), ...], rules={key: rule})` and `SoilProfile.rebuild(library)`: profiles are derived from a library and re-derived after a fit; every horizon records its library `key`.
+- `SublayerRule(sublayers=((thickness_m, ncomp), ...))` (`simplesoilprofile.core.discretization`): an explicit list of sublayers, as a SWAP soil database gives them; its thicknesses add up to the horizon's.
+- `profile_from_swap_database(folder, soil_id, bofek_unit=, variant=)` (`simplesoilprofile.sources.swap_database`): a profile of the SWAP soil database tables multiSWAP reads (BOFEK2020 units, Staring series 2018); each soil layer a horizon with its Staring unit's parameters, texture, bulk density and a `SublayerRule`; `variant="_sss"` for the SWAP-SSS set.
 
 - `CompartmentRule(hcomp, top_cap=(thickness, hcomp))` (`simplesoilprofile.core.discretization`): discretization by compartment height in metres with an optional finer cap at the horizon top; `sublayers(profile)` resolves every present horizon into `Sublayer` rows, checks that thicknesses are multiples of the compartment height, and enforces SWAP's 5000-compartment limit (`MACP`). `CountRule` keeps the count-based schemes.
 
