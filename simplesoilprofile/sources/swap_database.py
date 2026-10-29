@@ -47,7 +47,9 @@ def profile_from_swap_database(
     BOFEK2020 unit ``bofek_unit`` (``soil_profiles_info.csv``'s ``BOFEK_2020``).
 
     ``variant`` is the suffix of the layout, discretization and texture tables (``"_sss"`` for the SWAP-SSS set);
-    ``staring_series.csv`` and ``soil_profiles_info.csv`` have none.
+    ``staring_series.csv`` and ``soil_profiles_info.csv`` have none. The SWAP-SSS set's profiles are 100 m deep with
+    compartments of more than 10 m, which SWAP itself refuses: to run one in SWAP, give its horizons a rule of your
+    own first (``profile.with_rule(i, rule)``).
 
     Raises:
         ValueError: neither or both of ``soil_id`` and ``bofek_unit``; a unit with no or several representative
